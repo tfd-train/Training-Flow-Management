@@ -3,62 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臺北市政府消防局 114年教育訓練管理系統 (專業行政版)</title>
+    <title>臺北市政府消防局 114年教育訓練管理系統 (藍色統一版)</title>
     <style>
-        /* --- 基礎設定 (回歸正統行政風格) --- */
         :root {
-            --bg-body: #f0f0f0;
-            --bg-sidebar: #2d3748; /* 深鐵灰 */
-            --sidebar-text: #cbd5e0;
-            --sidebar-active: #1a202c;
-            --accent: #3182ce; /* 標準藍 */
-            --border-color: #a0aec0; /* 較深的邊框，清晰 */
-            --header-bg: #e2e8f0; /* Excel 標題灰 */
+            --sidebar-bg: #1e293b; /* 深藍灰側邊欄 */
+            --active-item: #334155;
+            --accent: #3b82f6; /* 亮藍 */
+            --bg-color: #f1f5f9;
+            --border-color: #cbd5e1;
+            --header-bg: #f8fafc;
         }
 
         body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
-            background-color: var(--bg-body);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
-            color: #1a202c;
-            font-size: 13px;
+            color: #333;
         }
-
-        * { box-sizing: border-box; }
 
         /* --- 側邊欄 --- */
         .sidebar {
-            width: 220px;
-            background-color: var(--bg-sidebar);
+            width: 240px;
+            background-color: var(--sidebar-bg);
             color: white;
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            border-right: 1px solid #000;
         }
         .sidebar-header {
-            padding: 15px;
-            background-color: #1a202c;
-            border-bottom: 1px solid #4a5568;
+            padding: 20px;
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
         }
-        .sidebar-header h2 { margin: 0; font-size: 16px; font-weight: bold; color: #fff; }
+        .sidebar-header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
         
         .nav-item {
-            padding: 12px 15px;
+            padding: 15px 20px;
             cursor: pointer;
-            color: var(--sidebar-text);
-            border-bottom: 1px solid #4a5568;
-            transition: background 0.2s;
+            border-left: 4px solid transparent;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
         }
-        .nav-item:hover { background-color: #4a5568; color: white; }
+        .nav-item:hover { background-color: var(--active-item); color: white; }
         .nav-item.active { 
-            background-color: #edf2f7; 
-            color: #2d3748; 
+            background-color: var(--active-item); 
+            color: var(--accent); 
+            border-left-color: var(--accent); 
             font-weight: bold; 
-            border-right: 4px solid var(--accent);
         }
 
         /* --- 主內容區 --- */
@@ -67,91 +65,91 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: white;
         }
 
         .top-bar {
-            height: 45px;
-            background: #f7fafc;
+            height: 55px;
+            background: white;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 25px;
         }
-        .page-title { font-size: 16px; font-weight: bold; color: #2d3748; }
+        .page-title { font-size: 18px; font-weight: 600; color: #1e293b; }
 
         .workspace {
             flex: 1;
-            padding: 10px;
-            overflow: hidden;
-            background: #fff;
+            padding: 20px;
+            overflow: hidden; /* 內部滾動 */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- 表格容器 --- */
+        /* --- 視圖區塊 --- */
         .view-section {
             display: none;
             height: 100%;
             flex-direction: column;
-            border: 1px solid #000; /* 外框加深 */
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         .view-section.active { display: flex; }
 
         .table-container {
             flex: 1;
             overflow: auto;
-            background: #fff;
         }
 
-        /* --- 表格樣式 (Excel 風格) --- */
+        /* --- 表格樣式 --- */
         table {
             border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed; /* 關鍵 */
             width: 100%;
-            table-layout: fixed;
         }
-        
-        /* 寬度設定 */
+
+        /* 強制表格最小寬度 */
         #table1 { min-width: 2000px; }
         #table2 { min-width: 1800px; }
         #table3 { min-width: 1400px; }
-        #table4 { min-width: 1400px; }
-
-        th, td {
-            border: 1px solid #718096; /* 清晰的格線 */
-            padding: 0;
-            height: 32px;
-        }
+        #table4 { min-width: 1600px; }
 
         th {
             background-color: var(--header-bg);
-            color: #000;
-            font-weight: bold;
+            color: #475569;
+            font-weight: 700;
+            border: 1px solid #94a3b8;
             text-align: center;
+            vertical-align: middle;
             position: sticky;
             top: 0;
             z-index: 10;
+            height: 50px;
             padding: 4px;
-            height: 45px; /* 容納換行 */
-            vertical-align: middle;
         }
 
-        /* 強制表頭置中 */
-        .th-center {
+        /* 表頭文字置中 */
+        .th-content {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
             width: 100%;
-            line-height: 1.3;
+            height: 100%;
+            line-height: 1.4;
             white-space: normal;
-            text-align: center;
         }
 
-        td { background: #fff; }
-        tr:nth-child(even) td { background-color: #f7fafc; } /* 隔行微灰，易讀 */
-        tr:hover td { background-color: #e6fffa; } /* 滑鼠懸停 */
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 0;
+            height: 36px;
+            background: white;
+            position: relative;
+        }
 
         /* --- 輸入框 --- */
         input[type="text"], input[type="number"] {
@@ -163,13 +161,11 @@
             text-align: center;
             font-family: inherit;
             font-size: 13px;
-            color: #000;
         }
-        input:focus { background-color: #ebf8ff; border: 2px solid var(--accent); }
-        
-        .align-left input { text-align: left; padding-left: 5px; }
+        input:focus { background-color: #eff6ff; box-shadow: inset 0 0 0 2px var(--accent); }
+        .align-left input { text-align: left; padding-left: 8px; }
 
-        /* --- 日期 + 排除六日 --- */
+        /* --- 日期與排除六日複合欄位 --- */
         .date-cell {
             display: flex;
             flex-direction: column;
@@ -177,155 +173,128 @@
         }
         .date-cell input {
             flex: 1;
-            border-bottom: 1px dashed #ccc;
-            font-size: 12px;
+            border-bottom: 1px dotted #e2e8f0;
         }
         .date-cell label {
-            height: 16px;
             font-size: 10px;
-            background: #edf2f7;
+            color: #64748b;
+            background: #f8fafc;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            color: #4a5568;
-            border-top: 1px solid #cbd5e0;
+            height: 16px;
         }
         .date-cell label:hover { background: #e2e8f0; color: #000; }
-        .date-cell input[type="checkbox"] { margin: 0 3px 0 0; width: auto; height: auto; }
+        .date-cell input[type="checkbox"] { width: auto; height: auto; margin-right: 4px; }
 
-        /* --- 仿 Excel 勾選框 (完美置中) --- */
-        .td-checkbox {
-            text-align: center !important;
-            vertical-align: middle !important;
-        }
+        /* --- 仿 Excel 勾選框 --- */
+        .td-checkbox { text-align: center !important; vertical-align: middle !important; }
         .excel-checkbox {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border: 1px solid #000; /* 黑框 */
-            background-color: #fff;
-            cursor: pointer;
-            display: inline-block;
-            position: relative;
-            margin-top: 3px; /* 微調垂直位置 */
+            appearance: none; -webkit-appearance: none;
+            width: 18px; height: 18px;
+            border: 1px solid #333; background-color: white;
+            cursor: pointer; display: inline-block;
+            position: relative; vertical-align: middle; margin: 0;
         }
         .excel-checkbox:checked::after {
-            content: '✓';
-            font-size: 14px;
-            font-weight: bold;
-            color: #000;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -55%);
+            content: '✓'; font-size: 14px; font-weight: 900; color: #000;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
-        .excel-checkbox:hover { background-color: #eee; }
+        .excel-checkbox:hover { background-color: #f1f5f9; }
 
-        /* --- 甘特圖專用樣式 (修復版) --- */
+        /* --- 甘特圖樣式 (藍色統一版) --- */
         .gantt-header-month td {
-            background-color: #2d3748;
-            color: #fff;
-            font-weight: bold;
-            text-align: left;
-            padding-left: 10px;
-            border: 1px solid #000;
-        }
-
-        /* 時間軸色塊列 */
-        .gantt-visual-row { height: 15px; }
-        .gantt-visual-row td { border-bottom: 1px solid #e2e8f0; } /* 內部微弱線 */
-        
-        /* 數據列 */
-        .gantt-data-row { height: 30px; }
-        .gantt-data-row td { border-top: none; } /* 與上方合併感 */
-
-        /* 活動名稱欄位 (合併儲存格) */
-        .gantt-name-cell {
-            background: #fff;
-            vertical-align: middle;
-            text-align: left;
-            padding-left: 8px;
-            font-size: 12px;
-            border-bottom: 2px solid #718096; /* 每個活動間有粗線分隔 */
-        }
-
-        /* 色塊樣式 */
-        .bar-active {
-            background-color: #4a5568; /* 深灰 (Excel標準) */
-            border: 1px solid #2d3748;
-        }
-        
-        .gantt-num input { font-weight: bold; color: #000; font-size: 12px; }
-        
-        /* 底部統計 */
-        .stats-row td {
             background-color: #e2e8f0;
-            color: #2b6cb0;
             font-weight: bold;
-            border-top: 2px double #000;
-            border-bottom: 2px solid #000;
+            text-align: left;
+            padding-left: 15px;
+            border-top: 2px solid #475569;
+            border-bottom: 1px solid #94a3b8;
+            color: #1e293b;
+        }
+
+        .gantt-visual-row { height: 15px; }
+        .gantt-data-row { height: 30px; }
+
+        .gantt-cell-bar { border-right: 1px solid #e2e8f0; }
+        
+        /* 統一使用單一藍色色塊 */
+        .bar-active { 
+            background-color: #3b82f6; 
+            border: 1px solid #2563eb; 
+        }
+
+        .gantt-num input { font-weight: bold; color: #0f172a; font-size: 12px; }
+
+        .stats-row td {
+            background-color: #f0f9ff; 
+            border-top: 2px double #94a3b8;
+            border-bottom: 2px solid #333;
+            color: #0369a1;
+            font-weight: bold;
+            font-size: 12px;
             text-align: center;
         }
-
-        /* 按鈕 */
-        .btn-flat {
-            padding: 5px 12px;
-            border: 1px solid #a0aec0;
-            background: #fff;
-            color: #2d3748;
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 5px;
-        }
-        .btn-flat:hover { background: #e2e8f0; }
         
-        .btn-add {
-            width: 100%;
-            padding: 8px;
-            background: #edf2f7;
-            border: 1px solid #cbd5e0;
-            border-top: none;
-            color: #2b6cb0;
-            font-weight: bold;
-            cursor: pointer;
+        .gantt-name-cell {
+            background-color: #fff;
+            border-bottom: 2px solid #cbd5e1;
+            padding-left: 10px;
+            font-size: 12px;
+            vertical-align: middle;
         }
-        .btn-add:hover { background: #e2e8f0; }
 
-        /* 特殊顏色欄位 */
-        .bg-yellow { background-color: #ffffcc !important; }
-        .bg-blue-light { background-color: #e6fffa !important; }
-        .bg-red-light { background-color: #fff5f5 !important; }
-        .text-danger { color: #c53030; font-weight: bold; }
-        .text-blue { color: #2b6cb0; font-weight: bold; }
+        /* --- 按鈕與色彩 --- */
+        .btn-action {
+            padding: 6px 16px; border-radius: 4px; border: none; color: white; 
+            font-size: 13px; cursor: pointer; margin-left: 8px;
+        }
+        .btn-add-row {
+            width: 100%; padding: 10px; background: #fff; border: 1px dashed #94a3b8;
+            color: var(--accent); font-weight: bold; cursor: pointer;
+            border-top: none;
+        }
+        .btn-add-row:hover { background: #eff6ff; }
+
+        .col-yellow { background-color: #ffffcc; }
+        .col-blue-light { background-color: #e0f2fe; }
+        .col-red-light { background-color: #fee2e2; }
+        
+        .text-manpower { color: #1d4ed8; font-weight: bold; }
+        .text-danger { color: #ef4444; font-weight: bold; }
 
     </style>
 </head>
 <body>
 
+    <!-- 側邊欄 -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>教育訓練管理系統</h2>
-            <span style="font-size:11px; color:#a0aec0;">114年度 V4.0</span>
+            <span style="font-size:11px; color:#64748b">114年度版</span>
         </div>
-        <div class="nav-item active" onclick="switchTab(1, this)">1. 消防人員訓練</div>
-        <div class="nav-item" onclick="switchTab(2, this)">2. 非消防人員訓練</div>
-        <div class="nav-item" onclick="switchTab(3, this)">3. 重大活動</div>
-        <div class="nav-item" onclick="switchTab(4, this)">4. 甘特圖流路</div>
+        <nav>
+            <div class="nav-item active" onclick="switchTab(1, this)">1. 消防人員訓練</div>
+            <div class="nav-item" onclick="switchTab(2, this)">2. 非消防人員訓練</div>
+            <div class="nav-item" onclick="switchTab(3, this)">3. 重大活動</div>
+            <div class="nav-item" onclick="switchTab(4, this)">4. 甘特圖流路</div>
+        </nav>
     </div>
 
+    <!-- 主內容 -->
     <div class="main-content">
         <div class="top-bar">
             <div class="page-title" id="pageTitle">附件1 - 消防人員訓練</div>
             <div>
-                <button class="btn-flat" onclick="alert('Excel 匯出功能')">📥 下載 Excel</button>
-                <button class="btn-flat" onclick="alert('PDF 匯出功能')">📄 下載 PDF</button>
+                <button class="btn-action" style="background:#16a34a" onclick="alert('模擬：Excel 報表生成中...')">下載 Excel</button>
+                <button class="btn-action" style="background:#dc2626" onclick="alert('模擬：PDF 報表生成中...')">下載 PDF</button>
             </div>
         </div>
 
         <div class="workspace">
             
-            <!-- TAB 1 -->
+            <!-- TAB 1: 消防人員 -->
             <div id="view1" class="view-section active">
                 <div class="table-container">
                     <table id="table1">
@@ -345,22 +314,22 @@
                                 <th style="width:50px">每天<br>時數</th>
                                 <th style="width:50px">每梯<br>時數</th>
                                 <th style="width:50px">合計<br>時數</th>
-                                <th style="width:100px" class="bg-blue-light"><div class="th-center">預計調用人數<br>(分隊人力)</div></th>
-                                <th style="width:120px" class="bg-yellow"><div class="th-center">是否提供宜基<br>北桃參訓</div></th>
-                                <th style="width:60px" class="bg-yellow"><div class="th-center">暫訂<br>新北</div></th>
-                                <th style="width:60px" class="bg-yellow"><div class="th-center">暫訂<br>基隆</div></th>
-                                <th style="width:60px" class="bg-yellow"><div class="th-center">暫訂<br>桃園</div></th>
-                                <th style="width:60px" class="bg-yellow"><div class="th-center">暫訂<br>宜蘭</div></th>
+                                <th style="width:100px" class="col-blue-light"><div class="th-content">預計調用人數<br>(分隊人力)</div></th>
+                                <th style="width:120px" class="col-yellow"><div class="th-content">是否提供宜基<br>北桃參訓</div></th>
+                                <th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>新北</div></th>
+                                <th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>基隆</div></th>
+                                <th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>桃園</div></th>
+                                <th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>宜蘭</div></th>
                                 <th style="width:150px">備註</th>
                             </tr>
                         </thead>
                         <tbody id="tbody1"></tbody>
                     </table>
                 </div>
-                <button class="btn-add" onclick="addRow(1)">+ 新增課程</button>
+                <button class="btn-add-row" onclick="addRow(1)">+ 新增 消防人員課程</button>
             </div>
 
-            <!-- TAB 2 -->
+            <!-- TAB 2: 非消防人員 -->
             <div id="view2" class="view-section">
                 <div class="table-container">
                     <table id="table2">
@@ -381,17 +350,17 @@
                                 <th style="width:50px">每梯<br>時數</th>
                                 <th style="width:50px">合計<br>時數</th>
                                 <th style="width:80px">調用本局<br>教官人數</th>
-                                <th style="width:100px"><div class="th-center">是否提供<br>跨縣市</div></th>
+                                <th style="width:100px"><div class="th-content">是否提供<br>跨縣市</div></th>
                                 <th style="width:150px">備註</th>
                             </tr>
                         </thead>
                         <tbody id="tbody2"></tbody>
                     </table>
                 </div>
-                <button class="btn-add" onclick="addRow(2)">+ 新增課程</button>
+                <button class="btn-add-row" onclick="addRow(2)">+ 新增 非消防人員課程</button>
             </div>
 
-            <!-- TAB 3 -->
+            <!-- TAB 3: 重大活動 -->
             <div id="view3" class="view-section">
                 <div class="table-container">
                     <table id="table3">
@@ -405,31 +374,33 @@
                                 <th style="width:140px">日期</th>
                                 <th style="width:50px">天數</th>
                                 <th style="width:50px">時數</th>
-                                <th style="width:100px" class="bg-red-light"><div class="th-center">每日調用<br>外勤人數</div></th>
+                                <th style="width:100px" class="col-red-light"><div class="th-content">每日調用<br>外勤人數</div></th>
                                 <th style="width:150px">地點(教室)</th>
                             </tr>
                         </thead>
                         <tbody id="tbody3"></tbody>
                     </table>
                 </div>
-                <button class="btn-add" onclick="addRow(3)">+ 新增活動</button>
+                <button class="btn-add-row" onclick="addRow(3)">+ 新增 重大活動</button>
             </div>
 
-            <!-- TAB 4: 甘特圖 (修復版) -->
+            <!-- TAB 4: 甘特圖 -->
             <div id="view4" class="view-section">
-                <div style="padding:10px; background:#edf2f7; border-bottom:1px solid #cbd5e0; font-size:12px; color:#4a5568;">
-                    ⚠️ <strong>說明：</strong> 甘特圖已依照月份分組。深灰色塊表示活動期間（時間軸），白色格子顯示該日調用人數。勾選「排除六日」可自動跳過週末。
+                <div style="padding:12px 16px; background:#fffbeb; border-bottom:1px solid #fbbf24; font-size:13px; color:#92400e;">
+                    ⚠️ <strong>統計說明：</strong> 
+                    統計範圍包含「附件1調用人數」+「附件2教官人數」+「附件3外勤人數」。
+                    若在日期欄位勾選「排除六日」，甘特圖將自動跳過週六日不計入統計。
                 </div>
                 <div class="table-container">
                     <table id="table4">
                         <thead>
                             <tr id="ganttHeader">
                                 <th style="width:250px">班期 / 活動名稱</th>
-                                <!-- JS 生成 1-31 -->
+                                <!-- JS 將自動生成 1-31 的標題 -->
                             </tr>
                         </thead>
                         <tbody id="tbody4">
-                            <!-- JS 生成內容 -->
+                            <!-- JS 生成甘特圖內容 -->
                         </tbody>
                     </table>
                 </div>
@@ -439,7 +410,8 @@
     </div>
 
     <script>
-        // 初始資料
+        // --- 初始模擬資料 ---
+        // 欄位: exclude 代表是否排除六日
         let d1 = [
             {m:'1', unit:'訓練中心', name:'火災搶救初級班', date:'1/6-19', mp:20, exclude:true, ext:false},
             {m:'1', unit:'訓練中心', name:'112年警特班', date:'1/10-24', mp:4, exclude:false, ext:false}
@@ -451,26 +423,27 @@
             {unit:'秘書室', name:'119消防節慶祝大會', date:'1/16', mp:25, exclude:false}
         ];
 
+        // --- Tab 切換邏輯 ---
         function switchTab(idx, btn) {
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
             btn.classList.add('active');
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.getElementById(`view${idx}`).classList.add('active');
             
-            const titles = ['附件1 - 消防人員', '附件2 - 非消防人員', '附件3 - 重大活動', '甘特圖 - 訓練流路'];
+            const titles = ['附件1 - 消防人員訓練', '附件2 - 非消防人員訓練', '附件3 - 重大活動', '甘特圖 - 訓練流路'];
             document.getElementById('pageTitle').innerText = titles[idx-1];
 
             if(idx === 4) renderGantt();
         }
 
-        // 渲染 T1
+        // --- 渲染 Table 1 ---
         function renderT1() {
             const tb = document.getElementById('tbody1');
             tb.innerHTML = '';
             d1.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                    <td style="text-align:center;"><button onclick="del(1,${i})" style="color:#cbd5e0;background:none;border:none;cursor:pointer;font-weight:bold;">×</button></td>
-                    <td><input type="text" value="${i+1}" readonly style="color:#a0aec0"></td>
+                    <td><button onclick="del(1,${i})" style="width:100%;color:#9ca3af;background:none;border:none;cursor:pointer;">×</button></td>
+                    <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.m||''}" onchange="d1[${i}].m=this.value"></td>
                     <td><input type="text" value="${r.unit||''}" onchange="d1[${i}].unit=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.name||''}" onchange="d1[${i}].name=this.value"></td>
@@ -484,29 +457,31 @@
                     <td><input type="text" value="${r.loc||''}" onchange="d1[${i}].loc=this.value"></td>
                     <td><input type="number" value="${r.batch||''}" onchange="d1[${i}].batch=this.value"></td>
                     <td><input type="number" value="${r.pBatch||''}" onchange="d1[${i}].pBatch=this.value"></td>
-                    <td style="background:#f7fafc;text-align:center;line-height:32px;color:#718096;">${(r.batch*r.pBatch)||0}</td>
+                    <td style="background:#f8fafc;text-align:center;line-height:36px;color:#64748b;">${(r.batch*r.pBatch)||0}</td>
                     <td><input type="number" value="${r.dHour||''}" onchange="d1[${i}].dHour=this.value"></td>
                     <td><input type="number" value="${r.bHour||''}" onchange="d1[${i}].bHour=this.value"></td>
-                    <td style="background:#f7fafc;text-align:center;line-height:32px;color:#718096;">${(r.batch*r.bHour)||0}</td>
-                    <td class="bg-blue-light"><input type="number" value="${r.mp||''}" onchange="d1[${i}].mp=this.value" class="text-blue"></td>
-                    <td class="bg-yellow td-checkbox"><input type="checkbox" class="excel-checkbox" ${r.ext?'checked':''} onchange="d1[${i}].ext=this.checked"></td>
-                    <td class="bg-yellow"><input type="number" value="${r.nt||''}" onchange="d1[${i}].nt=this.value"></td>
-                    <td class="bg-yellow"><input type="number" value="${r.kl||''}" onchange="d1[${i}].kl=this.value"></td>
-                    <td class="bg-yellow"><input type="number" value="${r.ty||''}" onchange="d1[${i}].ty=this.value"></td>
-                    <td class="bg-yellow"><input type="number" value="${r.yl||''}" onchange="d1[${i}].yl=this.value"></td>
+                    <td style="background:#f8fafc;text-align:center;line-height:36px;color:#64748b;">${(r.batch*r.bHour)||0}</td>
+                    <td class="col-blue-light"><input type="number" value="${r.mp||''}" onchange="d1[${i}].mp=this.value" class="text-manpower"></td>
+                    
+                    <td class="td-checkbox"><input type="checkbox" class="excel-checkbox" ${r.ext?'checked':''} onchange="d1[${i}].ext=this.checked"></td>
+                    
+                    <td><input type="number" value="${r.nt||''}" onchange="d1[${i}].nt=this.value"></td>
+                    <td><input type="number" value="${r.kl||''}" onchange="d1[${i}].kl=this.value"></td>
+                    <td><input type="number" value="${r.ty||''}" onchange="d1[${i}].ty=this.value"></td>
+                    <td><input type="number" value="${r.yl||''}" onchange="d1[${i}].yl=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.note||''}" onchange="d1[${i}].note=this.value"></td>
                 </tr>`;
             });
         }
 
-        // 渲染 T2
+        // --- 渲染 Table 2 ---
         function renderT2() {
             const tb = document.getElementById('tbody2');
             tb.innerHTML = '';
             d2.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                    <td style="text-align:center;"><button onclick="del(2,${i})" style="color:#cbd5e0;background:none;border:none;cursor:pointer;font-weight:bold;">×</button></td>
-                    <td><input type="text" value="${i+1}" readonly style="color:#a0aec0"></td>
+                    <td><button onclick="del(2,${i})" style="width:100%;color:#9ca3af;background:none;border:none;cursor:pointer;">×</button></td>
+                    <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.m||''}" onchange="d2[${i}].m=this.value"></td>
                     <td><input type="text" value="${r.unit||''}" onchange="d2[${i}].unit=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.name||''}" onchange="d2[${i}].name=this.value"></td>
@@ -520,10 +495,10 @@
                     <td><input type="text" value="${r.loc||''}" onchange="d2[${i}].loc=this.value"></td>
                     <td><input type="number" value="${r.batch||''}" onchange="d2[${i}].batch=this.value"></td>
                     <td><input type="number" value="${r.pBatch||''}" onchange="d2[${i}].pBatch=this.value"></td>
-                    <td style="background:#f7fafc;text-align:center;line-height:32px;color:#718096;">${(r.batch*r.pBatch)||0}</td>
+                    <td style="background:#f8fafc;text-align:center;line-height:36px;color:#64748b;">${(r.batch*r.pBatch)||0}</td>
                     <td><input type="number" value="${r.dHour||''}" onchange="d2[${i}].dHour=this.value"></td>
                     <td><input type="number" value="${r.bHour||''}" onchange="d2[${i}].bHour=this.value"></td>
-                    <td style="background:#f7fafc;text-align:center;line-height:32px;color:#718096;">${(r.batch*r.bHour)||0}</td>
+                    <td style="background:#f8fafc;text-align:center;line-height:36px;color:#64748b;">${(r.batch*r.bHour)||0}</td>
                     <td><input type="number" value="${r.inst||''}" onchange="d2[${i}].inst=this.value"></td>
                     <td class="td-checkbox"><input type="checkbox" class="excel-checkbox" ${r.ext?'checked':''} onchange="d2[${i}].ext=this.checked"></td>
                     <td class="align-left"><input type="text" value="${r.note||''}" onchange="d2[${i}].note=this.value"></td>
@@ -531,14 +506,14 @@
             });
         }
 
-        // 渲染 T3
+        // --- 渲染 Table 3 ---
         function renderT3() {
             const tb = document.getElementById('tbody3');
             tb.innerHTML = '';
             d3.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                    <td style="text-align:center;"><button onclick="del(3,${i})" style="color:#cbd5e0;background:none;border:none;cursor:pointer;font-weight:bold;">×</button></td>
-                    <td><input type="text" value="${i+1}" readonly style="color:#a0aec0"></td>
+                    <td><button onclick="del(3,${i})" style="width:100%;color:#9ca3af;background:none;border:none;cursor:pointer;">×</button></td>
+                    <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.unit||''}" onchange="d3[${i}].unit=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.name||''}" onchange="d3[${i}].name=this.value"></td>
                     <td><input type="text" value="${r.target||''}" onchange="d3[${i}].target=this.value"></td>
@@ -550,21 +525,22 @@
                     </td>
                     <td><input type="number" value="${r.days||''}" onchange="d3[${i}].days=this.value"></td>
                     <td><input type="number" value="${r.hours||''}" onchange="d3[${i}].hours=this.value"></td>
-                    <td class="bg-red-light"><input type="number" value="${r.mp||''}" onchange="d3[${i}].mp=this.value" class="text-danger"></td>
+                    <td class="col-red-light"><input type="number" value="${r.mp||''}" onchange="d3[${i}].mp=this.value" class="text-danger"></td>
                     <td class="align-left"><input type="text" value="${r.loc||''}" onchange="d3[${i}].loc=this.value"></td>
                 </tr>`;
             });
         }
 
-        // 渲染甘特圖 (修復對齊)
+        // --- 甘特圖 (藍色統一色塊) ---
         function renderGantt() {
             const header = document.getElementById('ganttHeader');
             header.innerHTML = '<th style="width:250px">班期 / 活動名稱</th>';
-            for(let i=1; i<=31; i++) header.innerHTML += `<th style="width:30px; font-size:11px;">${i}</th>`;
+            for(let i=1; i<=31; i++) header.innerHTML += `<th style="width:30px; font-size:11px; color:#64748b;">${i}</th>`;
 
             const tbody = document.getElementById('tbody4');
             tbody.innerHTML = '';
 
+            // 1. 解析函數
             const parse = (str, month, exclude) => {
                 let days = [];
                 if(!str) return days;
@@ -588,6 +564,7 @@
                 return days;
             };
 
+            // 2. 資料收集
             let allRows = [];
             d1.forEach(r => { if(r.date && r.mp) allRows.push({m:r.m||'1', n:r.name, ds:parse(r.date, r.m||1, r.exclude), v:r.mp}); });
             d2.forEach(r => { if(r.date && r.inst) allRows.push({m:r.m||'1', n:r.name, ds:parse(r.date, r.m||1, r.exclude), v:r.inst}); });
@@ -599,10 +576,12 @@
                 }
             });
 
+            // 3. 按月份分組
             let grouped = {};
             for(let i=1; i<=12; i++) grouped[i] = [];
             allRows.forEach(r => { if(grouped[r.m]) grouped[r.m].push(r); });
 
+            // 4. 渲染
             for(let m=1; m<=12; m++) {
                 if(grouped[m].length === 0) continue;
 
@@ -610,25 +589,27 @@
                 let monthlySum = Array(32).fill(0);
 
                 grouped[m].forEach(r => {
-                    // 關鍵修復：使用 rowspan=2 合併名稱欄位，確保對齊
-                    let rowsHTML = `
-                    <tr>
-                        <td rowspan="2" class="gantt-name-cell">${r.n}</td>
-                        ${Array.from({length:31}, (_,i) => {
-                            let active = r.ds.includes(i+1);
-                            return `<td class="gantt-visual-row gantt-cell-bar ${active?'bar-active':''}"></td>`;
-                        }).join('')}
-                    </tr>
-                    <tr>
-                        ${Array.from({length:31}, (_,i) => {
-                            let active = r.ds.includes(i+1);
-                            if(active) monthlySum[i+1] += parseInt(r.v);
-                            return `<td class="gantt-data-row gantt-num" style="border-bottom:2px solid #718096;">
-                                ${active ? `<input type="text" value="${r.v}" readonly>` : ''}
-                            </td>`;
-                        }).join('')}
-                    </tr>`;
-                    tbody.innerHTML += rowsHTML;
+                    // 上列：統一藍色色塊
+                    let trVisual = `<tr>
+                        <td rowspan="2" class="gantt-name-cell">${r.n}</td>`;
+                    
+                    // 下列：數據
+                    let trData = `<tr>`;
+
+                    for(let i=1; i<=31; i++) {
+                        let active = r.ds.includes(i);
+                        if(active) monthlySum[i] += parseInt(r.v);
+
+                        // 統一使用 bar-active (藍色)
+                        trVisual += `<td class="gantt-visual-row gantt-cell-bar ${active?'bar-active':''}"></td>`;
+                        
+                        trData += `<td class="gantt-data-row gantt-num" style="border-bottom:2px solid #cbd5e1;">
+                            ${active ? `<input type="text" value="${r.v}" readonly>` : ''}
+                        </td>`;
+                    }
+                    trVisual += '</tr>';
+                    trData += '</tr>';
+                    tbody.innerHTML += trVisual + trData;
                 });
 
                 let trStats = `<tr class="stats-row"><td>每日調用人數統計</td>`;
@@ -640,9 +621,11 @@
             }
         }
 
+        // --- 通用操作 ---
         function addRow(t){if(t==1)d1.push({});if(t==2)d2.push({});if(t==3)d3.push({});renderAll();}
-        function del(t,i){if(confirm('刪除?')){if(t==1)d1.splice(i,1);if(t==2)d2.splice(i,1);if(t==3)d3.splice(i,1);renderAll();}}
+        function del(t,i){if(confirm('刪除此行?')){if(t==1)d1.splice(i,1);if(t==2)d2.splice(i,1);if(t==3)d3.splice(i,1);renderAll();}}
         function renderAll(){renderT1();renderT2();renderT3();}
+        
         renderAll();
 
     </script>
