@@ -1,475 +1,376 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Save, Plus, Trash2, FileSpreadsheet, FileText, RefreshCw, AlertTriangle } from 'lucide-react';
-
-// --- 1. 初始模擬資料 (依照您的附件內容設定) ---
-
-const initialSheet1 = [
-  { id: 1, month: '1', unit: '訓練中心', name: '火災搶救初級班', target: '消防人員', date: '1/6-19', location: '竹山訓練中心', batches: 1, perBatch: 20, hours: 80, manpower: 20, external: false, note: '' },
-  { id: 2, month: '1', unit: '訓練中心', name: '112年警特一般生錄取人員', target: '消防人員', date: '1/10-1/24', location: '訓練中心', batches: 1, perBatch: 4, hours: 8, manpower: 4, external: false, note: '' },
-  { id: 3, month: '2', unit: '訓練中心', name: '救助訓第36期', target: '消防人員', date: '2/10-4/18', location: '訓練中心', batches: 1, perBatch: 42, hours: 320, manpower: 43, external: true, note: '含教官5人' },
-];
-
-const initialSheet2 = [
-  { id: 1, month: '1', unit: '應變科', name: '防災業務研習班', target: '各機關業務人員', date: '1/13-1/15', location: '公訓處', batches: 3, perBatch: 96, hours: 18, instructorNeed: 0, note: '' },
-  { id: 2, month: '1', unit: '搶救科', name: '義消搜救隊1月份訓練', target: '義消', date: '1/18', location: '訓練中心', batches: 1, perBatch: 41, hours: 6, instructorNeed: 0, note: '' },
-];
-
-const initialSheet3 = [
-  { id: 1, unit: '秘書室', name: '119消防節慶祝大會', target: '授獎人員', date: '1/16', days: 3, hours: 3, dailyManpower: 25, location: '中油大樓' },
-  { id: 2, unit: '應變科', name: '民安11號演習', target: '外勤大隊', date: '7/15', days: 1, hours: 24, dailyManpower: 400, location: '待定' },
-];
-
-// --- 2. 輔助函式：日期解析器 ---
-// 解析 "1/6-19" 或 "1/13-1/15" 或 "1/18" 格式，回傳該活動在該月佔用的日期陣列 [6, 7, ..., 19]
-const parseDateToDays = (dateStr) => {
-  const days = [];
-  if (!dateStr) return days;
-
-  try {
-    // 簡單正規化：移除空白，處理常見分隔符
-    const cleanStr = dateStr.replace(/\(.*\)/, '').trim(); // 移除備註如 (暫定)
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺北市消防局 114年教育訓練管理系統</title>
     
-    // 模式 A: "1/6-19" (同一月，跨日)
-    const rangeMatch = cleanStr.match(/(\d+)\/(\d+)-(\d+)/);
-    // 模式 B: "1/13-1/15" (跨月或完整寫法)
-    const fullRangeMatch = cleanStr.match(/(\d+)\/(\d+)-(\d+)\/(\d+)/);
-    // 模式 C: "1/18" (單日)
-    const singleMatch = cleanStr.match(/(\d+)\/(\d+)/);
-
-    if (fullRangeMatch) {
-        const start = parseInt(fullRangeMatch[2]);
-        const end = parseInt(fullRangeMatch[4]);
-        // 簡化處理：假設同月份，若跨月需更複雜邏輯，這裡先做同月
-        if(fullRangeMatch[1] === fullRangeMatch[3]) {
-            for (let i = start; i <= end; i++) days.push(i);
-        }
-    } else if (rangeMatch) {
-      const start = parseInt(rangeMatch[2]);
-      const end = parseInt(rangeMatch[3]);
-      if (end >= start) {
-        for (let i = start; i <= end; i++) days.push(i);
-      }
-    } else if (singleMatch) {
-      days.push(parseInt(singleMatch[2]));
-    }
-  } catch (e) {
-    console.error("Date parse error", e);
-  }
-  return days;
-};
-
-// --- 3. 主元件 ---
-
-export default function FireDeptTrainingSystem() {
-  const [activeTab, setActiveTab] = useState(1);
-  const [sheet1, setSheet1] = useState(initialSheet1);
-  const [sheet2, setSheet2] = useState(initialSheet2);
-  const [sheet3, setSheet3] = useState(initialSheet3);
-  
-  // Sheet 4 是根據前三表生成的，但也允許手動覆寫 (這裡使用 derived state 概念，實際專案可能需要更複雜的 sync 機制)
-  const [sheet4, setSheet4] = useState([]);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
-
-  // --- 自動計算甘特圖流路邏輯 ---
-  const generateGanttData = () => {
-    const newGanttRows = [];
-    let rowIdCounter = 1;
-
-    // 1. 處理 Sheet 1 (消防人員)
-    sheet1.forEach(item => {
-      if (!item.date || !item.manpower) return;
-      const activeDays = parseDateToDays(item.date);
-      const daysArray = Array(31).fill('');
-      
-      activeDays.forEach(day => {
-        if (day >= 1 && day <= 31) daysArray[day - 1] = item.manpower.toString();
-      });
-
-      newGanttRows.push({
-        id: `s1-${item.id}`,
-        month: item.month || '1', // 預設 1月
-        itemName: `${item.date} ${item.name} (調用${item.manpower}人)`,
-        days: daysArray,
-        source: 'sheet1'
-      });
-    });
-
-    // 2. 處理 Sheet 2 (非消防人員 - 雖然通常不調用分隊，但若有標註教官或特殊調用可加入)
-    sheet2.forEach(item => {
-      if (!item.date || (!item.instructorNeed && item.instructorNeed !== 0)) return;
-      // 假設這裡只顯示有調用教官的，或者全部顯示
-      const activeDays = parseDateToDays(item.date);
-      const daysArray = Array(31).fill('');
-      // 這裡示範：如果有調用教官，顯示教官數
-      const count = item.instructorNeed > 0 ? item.instructorNeed : 0;
-      
-      if (count > 0) {
-          activeDays.forEach(day => {
-            if (day >= 1 && day <= 31) daysArray[day - 1] = count.toString();
-          });
+    <!-- 1. 載入 Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-          newGanttRows.push({
-            id: `s2-${item.id}`,
-            month: item.month || '1',
-            itemName: `${item.date} ${item.name} (教官${count}人)`,
-            days: daysArray,
-            source: 'sheet2'
-          });
-      }
-    });
-
-    // 3. 處理 Sheet 3 (重大活動)
-    sheet3.forEach(item => {
-      if (!item.date || !item.dailyManpower) return;
-      const activeDays = parseDateToDays(item.date);
-      const daysArray = Array(31).fill('');
-      
-      activeDays.forEach(day => {
-        if (day >= 1 && day <= 31) daysArray[day - 1] = item.dailyManpower.toString();
-      });
-
-      // 解析月份 (簡單從日期字串抓第一個數字)
-      const monthMatch = item.date.match(/(\d+)\//);
-      const month = monthMatch ? monthMatch[1] : '1';
-
-      newGanttRows.push({
-        id: `s3-${item.id}`,
-        month: month,
-        itemName: `[重大活動] ${item.name} (調用${item.dailyManpower}人)`,
-        days: daysArray,
-        source: 'sheet3'
-      });
-    });
-
-    // 依照月份排序
-    newGanttRows.sort((a, b) => parseInt(a.month) - parseInt(b.month));
+    <!-- 2. 載入 React 與 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    setSheet4(newGanttRows);
-    setLastUpdated(new Date());
-  };
+    <!-- 3. 載入 Babel (讓瀏覽器能看懂 React 代碼) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  // 當切換到分頁4時，自動觸發計算 (也可設計手動按鈕)
-  useEffect(() => {
-    if (activeTab === 4) {
-        generateGanttData();
-    }
-  }, [activeTab]);
+    <!-- 4. 設定 Tailwind 樣式 -->
+    <style>
+        body { background-color: #f3f4f6; }
+        /* 自定義滾動條 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-  // --- 通用 CRUD ---
-  const handleInputChange = (setData, id, field, value) => {
-    setData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row));
-  };
-  const addRow = (setData, template) => setData(prev => [...prev, { ...template, id: Date.now() }]);
-  const deleteRow = (setData, id) => setData(prev => prev.filter(row => row.id !== id));
+    <!-- 5. React 程式邏輯區 -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  // --- UI 元件 ---
-  const InputCell = ({ value, onChange, placeholder, type = "text", className = "", disabled = false }) => (
-    <input
-      type={type}
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={`w-full h-full px-2 py-1 bg-transparent border-none outline-none focus:bg-blue-50 text-sm placeholder-gray-300 ${disabled ? 'text-gray-500 cursor-not-allowed' : ''} ${className}`}
-    />
-  );
+        // --- 簡易圖示元件 (替代 Lucide icons 以簡化依賴) ---
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+        const IconSave = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+        const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+        const IconAlert = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 font-sans text-gray-800">
-      
-      {/* 1. 頂部工具列 */}
-      <header className="bg-white shadow-sm border-b border-gray-200 p-4 mb-4 rounded-lg flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-blue-900 flex items-center gap-2">
-            <FileSpreadsheet className="text-blue-600"/> 
-            臺北市政府消防局 114年教育訓練管理系統
-          </h1>
-          <p className="text-xs text-gray-500 mt-1">線上即時填報・自動流路分析・制式報表輸出</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm shadow-sm transition" onClick={() => alert('模擬下載 Excel 檔案 (含4個工作表)')}>
-            <FileSpreadsheet size={16} /> 下載 Excel
-          </button>
-          <button className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm shadow-sm transition" onClick={() => alert('模擬下載 PDF 報表')}>
-            <FileText size={16} /> 下載 PDF
-          </button>
-          <button className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm shadow-sm transition">
-            <Save size={16} /> 儲存資料
-          </button>
-        </div>
-      </header>
+        // --- 初始資料 ---
+        const initialSheet1 = [
+            { id: 1, month: '1', unit: '訓練中心', name: '火災搶救初級班', target: '消防人員', date: '1/6-19', location: '竹山訓練中心', batches: 1, perBatch: 20, hours: 80, manpower: 20, external: false, note: '' },
+            { id: 2, month: '1', unit: '訓練中心', name: '112年警特一般生錄取人員', target: '消防人員', date: '1/10-1/24', location: '訓練中心', batches: 1, perBatch: 4, hours: 8, manpower: 4, external: false, note: '' },
+            { id: 3, month: '2', unit: '訓練中心', name: '救助訓第36期', target: '消防人員', date: '2/10-4/18', location: '訓練中心', batches: 1, perBatch: 42, hours: 320, manpower: 43, external: true, note: '含教官5人' },
+        ];
 
-      {/* 2. 分頁導覽 */}
-      <div className="flex gap-1 mb-0 pl-2 border-b border-gray-300">
-        {[
-          { id: 1, name: '附件1-消防人員' },
-          { id: 2, name: '附件2-非消防人員' },
-          { id: 3, name: '附件3-重大活動' },
-          { id: 4, name: '甘特圖-訓練流路' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg border-t border-l border-r transition-colors ${
-              activeTab === tab.id 
-                ? 'bg-white border-gray-300 border-b-white text-blue-700 font-bold shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' 
-                : 'bg-gray-200 border-transparent text-gray-500 hover:bg-gray-300'
-            }`}
-          >
-            {tab.name}
-          </button>
-        ))}
-      </div>
+        const initialSheet2 = [
+            { id: 1, month: '1', unit: '應變科', name: '防災業務研習班', target: '各機關業務人員', date: '1/13-1/15', location: '公訓處', batches: 3, perBatch: 96, hours: 18, instructorNeed: 0, note: '' },
+            { id: 2, month: '1', unit: '搶救科', name: '義消搜救隊1月份訓練', target: '義消', date: '1/18', location: '訓練中心', batches: 1, perBatch: 41, hours: 6, instructorNeed: 0, note: '' },
+        ];
 
-      {/* 3. 主要內容區 */}
-      <div className="bg-white border border-gray-300 shadow-md min-h-[600px]">
-        
-        {/* --- TAB 1: 消防人員 --- */}
-        {activeTab === 1 && (
-          <div className="overflow-auto max-h-[700px]">
-            <table className="w-full border-collapse text-sm min-w-[1400px]">
-              <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
-                <tr>
-                  <th className="border p-2 w-10 text-gray-600">刪除</th>
-                  <th className="border p-2 w-16">月份</th>
-                  <th className="border p-2 w-24">承辦單位</th>
-                  <th className="border p-2 w-64">課程名稱</th>
-                  <th className="border p-2 w-24">訓練對象</th>
-                  <th className="border p-2 w-32">課程日期 (範例:1/6-19)</th>
-                  <th className="border p-2 w-32">上課地點</th>
-                  <th className="border p-2 w-16">梯數</th>
-                  <th className="border p-2 w-16">每梯人數</th>
-                  <th className="border p-2 w-16 bg-gray-50">合計人數</th>
-                  <th className="border p-2 w-16">總時數</th>
-                  <th className="border p-2 w-20 text-blue-700 font-bold">調用人力</th>
-                  <th className="border p-2 w-20">外縣市</th>
-                  <th className="border p-2">備註</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sheet1.map((row) => (
-                  <tr key={row.id} className="hover:bg-blue-50 transition-colors">
-                    <td className="border text-center">
-                      <button onClick={() => deleteRow(setSheet1, row.id)} className="text-gray-400 hover:text-red-500 p-1"><Trash2 size={14}/></button>
-                    </td>
-                    <td className="border"><InputCell value={row.month} onChange={(v) => handleInputChange(setSheet1, row.id, 'month', v)} placeholder="1" /></td>
-                    <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet1, row.id, 'unit', v)} placeholder="訓練中心" /></td>
-                    <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet1, row.id, 'name', v)} placeholder="課程名稱..." /></td>
-                    <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet1, row.id, 'target', v)} placeholder="消防人員" /></td>
-                    <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet1, row.id, 'date', v)} placeholder="1/6-19" /></td>
-                    <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet1, row.id, 'location', v)} placeholder="地點" /></td>
-                    <td className="border"><InputCell value={row.batches} onChange={(v) => handleInputChange(setSheet1, row.id, 'batches', v)} type="number" placeholder="1" /></td>
-                    <td className="border"><InputCell value={row.perBatch} onChange={(v) => handleInputChange(setSheet1, row.id, 'perBatch', v)} type="number" placeholder="20" /></td>
-                    <td className="border bg-gray-50 text-center text-gray-600 select-none">{row.batches * row.perBatch || 0}</td>
-                    <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet1, row.id, 'hours', v)} type="number" placeholder="80" /></td>
-                    <td className="border bg-blue-50/50"><InputCell value={row.manpower} onChange={(v) => handleInputChange(setSheet1, row.id, 'manpower', v)} type="number" placeholder="20" className="font-medium text-blue-800"/></td>
-                    <td className="border text-center"><input type="checkbox" checked={row.external} onChange={(e) => handleInputChange(setSheet1, row.id, 'external', e.target.checked)} /></td>
-                    <td className="border"><InputCell value={row.note} onChange={(v) => handleInputChange(setSheet1, row.id, 'note', v)} placeholder="備註" /></td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="14" className="border p-3 bg-gray-50">
-                    <button onClick={() => addRow(setSheet1, { ...initialSheet1[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline">
-                      <Plus size={16}/> 新增 消防人員課程
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+        const initialSheet3 = [
+            { id: 1, unit: '秘書室', name: '119消防節慶祝大會', target: '授獎人員', date: '1/16', days: 3, hours: 3, dailyManpower: 25, location: '中油大樓' },
+            { id: 2, unit: '應變科', name: '民安11號演習', target: '外勤大隊', date: '7/15', days: 1, hours: 24, dailyManpower: 400, location: '待定' },
+        ];
 
-        {/* --- TAB 2: 非消防人員 --- */}
-        {activeTab === 2 && (
-          <div className="overflow-auto max-h-[700px]">
-             <table className="w-full border-collapse text-sm min-w-[1200px]">
-              <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
-                <tr>
-                  <th className="border p-2 w-10">刪除</th>
-                  <th className="border p-2 w-16">月份</th>
-                  <th className="border p-2 w-24">承辦單位</th>
-                  <th className="border p-2 w-64">課程名稱</th>
-                  <th className="border p-2 w-32">訓練對象</th>
-                  <th className="border p-2 w-32">課程日期</th>
-                  <th className="border p-2 w-32">訓練地點</th>
-                  <th className="border p-2 w-16">梯數</th>
-                  <th className="border p-2 w-16">每梯人數</th>
-                  <th className="border p-2 w-16 bg-gray-50">合計人數</th>
-                  <th className="border p-2 w-16">總時數</th>
-                  <th className="border p-2 w-24 text-orange-700 font-bold">教官人數</th>
-                  <th className="border p-2">備註</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sheet2.map((row) => (
-                  <tr key={row.id} className="hover:bg-orange-50/30 transition-colors">
-                    <td className="border text-center">
-                      <button onClick={() => deleteRow(setSheet2, row.id)} className="text-gray-400 hover:text-red-500 p-1"><Trash2 size={14}/></button>
-                    </td>
-                    <td className="border"><InputCell value={row.month} onChange={(v) => handleInputChange(setSheet2, row.id, 'month', v)} placeholder="1" /></td>
-                    <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet2, row.id, 'unit', v)} placeholder="科室" /></td>
-                    <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet2, row.id, 'name', v)} placeholder="課程名稱..." /></td>
-                    <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet2, row.id, 'target', v)} placeholder="對象" /></td>
-                    <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet2, row.id, 'date', v)} placeholder="1/13-15" /></td>
-                    <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet2, row.id, 'location', v)} placeholder="地點" /></td>
-                    <td className="border"><InputCell value={row.batches} onChange={(v) => handleInputChange(setSheet2, row.id, 'batches', v)} type="number" placeholder="1" /></td>
-                    <td className="border"><InputCell value={row.perBatch} onChange={(v) => handleInputChange(setSheet2, row.id, 'perBatch', v)} type="number" placeholder="50" /></td>
-                    <td className="border bg-gray-50 text-center select-none">{row.batches * row.perBatch || 0}</td>
-                    <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet2, row.id, 'hours', v)} type="number" placeholder="10" /></td>
-                    <td className="border bg-orange-50/50"><InputCell value={row.instructorNeed} onChange={(v) => handleInputChange(setSheet2, row.id, 'instructorNeed', v)} type="number" placeholder="0" className="font-medium text-orange-800"/></td>
-                    <td className="border"><InputCell value={row.note} onChange={(v) => handleInputChange(setSheet2, row.id, 'note', v)} placeholder="備註" /></td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="13" className="border p-3 bg-gray-50">
-                    <button onClick={() => addRow(setSheet2, { ...initialSheet2[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline">
-                      <Plus size={16}/> 新增 非消防人員課程
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+        // --- 輔助：日期解析 ---
+        const parseDateToDays = (dateStr) => {
+            const days = [];
+            if (!dateStr) return days;
+            try {
+                const cleanStr = dateStr.replace(/\(.*\)/, '').trim();
+                const fullRangeMatch = cleanStr.match(/(\d+)\/(\d+)-(\d+)\/(\d+)/);
+                const rangeMatch = cleanStr.match(/(\d+)\/(\d+)-(\d+)/);
+                const singleMatch = cleanStr.match(/(\d+)\/(\d+)/);
 
-        {/* --- TAB 3: 重大活動 --- */}
-        {activeTab === 3 && (
-          <div className="overflow-auto max-h-[700px]">
-            <table className="w-full border-collapse text-sm min-w-[1000px]">
-              <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
-                <tr>
-                  <th className="border p-2 w-10">刪除</th>
-                  <th className="border p-2 w-24">承辦單位</th>
-                  <th className="border p-2 w-64">重大活動演習名稱</th>
-                  <th className="border p-2 w-32">參加對象</th>
-                  <th className="border p-2 w-48">日期 (格式: 1/16)</th>
-                  <th className="border p-2 w-16">天數</th>
-                  <th className="border p-2 w-16">時數</th>
-                  <th className="border p-2 w-32 bg-red-50 text-red-700 font-bold border-red-200">每日調用人數</th>
-                  <th className="border p-2 w-48">地點</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sheet3.map((row) => (
-                  <tr key={row.id} className="hover:bg-red-50/30 transition-colors">
-                    <td className="border text-center">
-                      <button onClick={() => deleteRow(setSheet3, row.id)} className="text-gray-400 hover:text-red-500 p-1"><Trash2 size={14}/></button>
-                    </td>
-                    <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet3, row.id, 'unit', v)} placeholder="單位" /></td>
-                    <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet3, row.id, 'name', v)} placeholder="活動名稱..." /></td>
-                    <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet3, row.id, 'target', v)} placeholder="對象" /></td>
-                    <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet3, row.id, 'date', v)} placeholder="1/16" /></td>
-                    <td className="border"><InputCell value={row.days} onChange={(v) => handleInputChange(setSheet3, row.id, 'days', v)} type="number" placeholder="1" /></td>
-                    <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet3, row.id, 'hours', v)} type="number" placeholder="8" /></td>
-                    <td className="border bg-red-50/50 border-red-100"><InputCell value={row.dailyManpower} onChange={(v) => handleInputChange(setSheet3, row.id, 'dailyManpower', v)} type="number" placeholder="0" className="font-bold text-red-700"/></td>
-                    <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet3, row.id, 'location', v)} placeholder="地點" /></td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="9" className="border p-3 bg-gray-50">
-                    <button onClick={() => addRow(setSheet3, { ...initialSheet3[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline">
-                      <Plus size={16}/> 新增 重大活動
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+                if (fullRangeMatch) {
+                    const start = parseInt(fullRangeMatch[2]);
+                    const end = parseInt(fullRangeMatch[4]);
+                    if(fullRangeMatch[1] === fullRangeMatch[3]) { for (let i = start; i <= end; i++) days.push(i); }
+                } else if (rangeMatch) {
+                    const start = parseInt(rangeMatch[2]);
+                    const end = parseInt(rangeMatch[3]);
+                    if (end >= start) { for (let i = start; i <= end; i++) days.push(i); }
+                } else if (singleMatch) {
+                    days.push(parseInt(singleMatch[2]));
+                }
+            } catch (e) { console.error(e); }
+            return days;
+        };
 
-        {/* --- TAB 4: 甘特圖流路 (自動運算) --- */}
-        {activeTab === 4 && (
-          <div className="overflow-x-auto max-h-[750px] pb-10">
-            <div className="min-w-[1600px]">
-              {/* 控制列 */}
-              <div className="bg-yellow-50 border-b border-yellow-200 p-3 text-sm text-yellow-800 flex justify-between items-center sticky left-0">
-                <div className="flex items-center gap-2">
-                   <AlertTriangle size={16}/>
-                   <span>
-                     <strong>自動運算模式：</strong> 系統已依據附件1-3的資料自動填入日期與人數。
-                     <span className="ml-2 text-yellow-900/70">若有特殊狀況，可直接點擊格子手動修改數字。</span>
-                   </span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  最後更新：{lastUpdated.toLocaleTimeString()}
-                </div>
-              </div>
+        // --- 主應用元件 ---
+        function App() {
+            const [activeTab, setActiveTab] = useState(1);
+            const [sheet1, setSheet1] = useState(initialSheet1);
+            const [sheet2, setSheet2] = useState(initialSheet2);
+            const [sheet3, setSheet3] = useState(initialSheet3);
+            const [sheet4, setSheet4] = useState([]);
+            const [lastUpdated, setLastUpdated] = useState(new Date());
 
-              <table className="w-full border-collapse text-sm table-fixed">
-                <thead className="bg-gray-100 sticky top-0 z-20 shadow-sm">
-                  <tr>
-                    <th className="border p-1 w-16 bg-gray-200">月份</th>
-                    <th className="border p-1 w-80 text-left pl-2 bg-gray-200">訓練班期 / 活動名稱 (自動彙整)</th>
-                    {/* 產生 1-31 的表頭 */}
-                    {Array.from({ length: 31 }, (_, i) => (
-                      <th key={i} className="border p-0 w-8 text-center text-xs text-gray-500 font-normal bg-gray-100">{i + 1}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sheet4.length === 0 ? (
-                    <tr><td colSpan="33" className="p-8 text-center text-gray-400">尚無資料，請先至分頁 1-3 填寫內容</td></tr>
-                  ) : (
-                    sheet4.map((row, rowIndex) => (
-                      <tr key={row.id} className="hover:bg-gray-50 border-b border-gray-200">
-                        <td className="border text-center font-bold text-gray-700 bg-gray-50/50">{row.month}月</td>
-                        <td className="border px-2 py-1 text-xs truncate font-medium text-gray-800" title={row.itemName}>
-                          {/* 簡單區分顏色：附件1(藍), 附件2(橘), 附件3(紅) */}
-                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                             row.source === 'sheet3' ? 'bg-red-500' : row.source === 'sheet2' ? 'bg-orange-400' : 'bg-blue-500'
-                          }`}></span>
-                          {row.itemName}
-                        </td>
-                        
-                        {row.days.map((dayVal, dayIndex) => (
-                          <td key={dayIndex} className={`border p-0 text-center relative group ${dayVal ? 'bg-white' : 'bg-gray-50/30'}`}>
-                            {/* 矩陣輸入格 */}
-                            <input
-                              type="text"
-                              value={dayVal}
-                              onChange={(e) => {
-                                const newSheet4 = [...sheet4];
-                                newSheet4[rowIndex].days[dayIndex] = e.target.value;
-                                setSheet4(newSheet4);
-                              }}
-                              className={`w-full h-full text-center text-xs focus:bg-blue-100 focus:font-bold outline-none transition-colors 
-                                ${dayVal ? 'text-gray-900 font-medium' : 'text-transparent hover:text-gray-400 focus:text-gray-800'}
-                              `}
-                            />
-                          </td>
+            // 自動計算流路
+            const generateGanttData = () => {
+                const newGanttRows = [];
+                
+                // 處理 Sheet 1
+                sheet1.forEach(item => {
+                    if (!item.date || !item.manpower) return;
+                    const activeDays = parseDateToDays(item.date);
+                    const daysArray = Array(31).fill('');
+                    activeDays.forEach(day => { if (day >= 1 && day <= 31) daysArray[day - 1] = item.manpower.toString(); });
+                    newGanttRows.push({ id: `s1-${item.id}`, month: item.month || '1', itemName: `${item.date} ${item.name} (調用${item.manpower}人)`, days: daysArray, source: 'sheet1' });
+                });
+
+                // 處理 Sheet 2
+                sheet2.forEach(item => {
+                    if (!item.date || (!item.instructorNeed && item.instructorNeed !== 0)) return;
+                    const count = item.instructorNeed > 0 ? item.instructorNeed : 0;
+                    if (count > 0) {
+                        const activeDays = parseDateToDays(item.date);
+                        const daysArray = Array(31).fill('');
+                        activeDays.forEach(day => { if (day >= 1 && day <= 31) daysArray[day - 1] = count.toString(); });
+                        newGanttRows.push({ id: `s2-${item.id}`, month: item.month || '1', itemName: `${item.date} ${item.name} (教官${count}人)`, days: daysArray, source: 'sheet2' });
+                    }
+                });
+
+                // 處理 Sheet 3
+                sheet3.forEach(item => {
+                    if (!item.date || !item.dailyManpower) return;
+                    const activeDays = parseDateToDays(item.date);
+                    const daysArray = Array(31).fill('');
+                    activeDays.forEach(day => { if (day >= 1 && day <= 31) daysArray[day - 1] = item.dailyManpower.toString(); });
+                    const monthMatch = item.date.match(/(\d+)\//);
+                    const month = monthMatch ? monthMatch[1] : '1';
+                    newGanttRows.push({ id: `s3-${item.id}`, month: month, itemName: `[重大] ${item.name} (調用${item.dailyManpower}人)`, days: daysArray, source: 'sheet3' });
+                });
+
+                newGanttRows.sort((a, b) => parseInt(a.month) - parseInt(b.month));
+                setSheet4(newGanttRows);
+                setLastUpdated(new Date());
+            };
+
+            useEffect(() => { if (activeTab === 4) generateGanttData(); }, [activeTab]);
+
+            // 處理輸入
+            const handleInputChange = (setData, id, field, value) => {
+                setData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row));
+            };
+            const addRow = (setData, template) => setData(prev => [...prev, { ...template, id: Date.now() }]);
+            const deleteRow = (setData, id) => setData(prev => prev.filter(row => row.id !== id));
+
+            // Input 元件
+            const InputCell = ({ value, onChange, placeholder, type = "text", className = "", disabled = false }) => (
+                <input type={type} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled}
+                    className={`w-full h-full px-2 py-1 bg-transparent border-none outline-none focus:bg-blue-50 text-sm placeholder-gray-300 ${disabled ? 'text-gray-500 cursor-not-allowed' : ''} ${className}`} />
+            );
+
+            return (
+                <div className="p-4 max-w-[1920px] mx-auto font-sans text-gray-800">
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border border-gray-200 p-4 mb-4 rounded-lg flex justify-between items-center">
+                        <div>
+                            <h1 className="text-xl font-bold text-blue-900">臺北市政府消防局 114年教育訓練管理系統</h1>
+                            <p className="text-xs text-gray-500 mt-1">線上填報・流路分析・報表輸出</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm shadow-sm" onClick={() => alert('模擬：Excel 下載成功')}>
+                                <IconDownload /> 下載 Excel
+                            </button>
+                            <button className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm shadow-sm" onClick={() => alert('模擬：PDF 下載成功')}>
+                                <IconDownload /> 下載 PDF
+                            </button>
+                            <button className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm shadow-sm">
+                                <IconSave /> 儲存資料
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Tabs */}
+                    <div className="flex gap-1 mb-0 pl-2 border-b border-gray-300">
+                        {[
+                            { id: 1, name: '附件1-消防人員' },
+                            { id: 2, name: '附件2-非消防人員' },
+                            { id: 3, name: '附件3-重大活動' },
+                            { id: 4, name: '甘特圖-訓練流路' }
+                        ].map(tab => (
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg border-t border-l border-r transition-colors ${activeTab === tab.id ? 'bg-white border-gray-300 border-b-white text-blue-700 font-bold shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-200 border-transparent text-gray-500 hover:bg-gray-300'}`}>
+                                {tab.name}
+                            </button>
                         ))}
-                      </tr>
-                    ))
-                  )}
-                  
-                  {/* 自動小計列 */}
-                  <tr className="bg-gray-800 text-white font-bold sticky bottom-0 z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
-                    <td colSpan="2" className="border border-gray-700 p-1 text-right pr-3 text-xs uppercase tracking-wider">每日人力總缺口</td>
-                    {Array.from({ length: 31 }, (_, i) => {
-                      // 計算該日縱向總和
-                      const sum = sheet4.reduce((acc, row) => {
-                        const val = parseInt(row.days[i]) || 0;
-                        return acc + val;
-                      }, 0);
-                      // 警戒邏輯：超過 100 人變紅
-                      const isHighRisk = sum > 100;
-                      const isMediumRisk = sum > 50 && sum <= 100;
-                      
-                      return (
-                        <td key={i} className={`border border-gray-600 text-center text-xs p-1 transition-colors
-                          ${isHighRisk ? 'bg-red-600 text-white animate-pulse' : isMediumRisk ? 'bg-yellow-600 text-white' : ''}
-                        `}>
-                          {sum > 0 ? sum : ''}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                    </div>
+
+                    {/* Content */}
+                    <div className="bg-white border border-gray-300 shadow-md min-h-[600px]">
+                        
+                        {/* TAB 1 */}
+                        {activeTab === 1 && (
+                            <div className="overflow-auto max-h-[700px]">
+                                <table className="w-full border-collapse text-sm min-w-[1400px]">
+                                    <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
+                                        <tr>
+                                            <th className="border p-2 w-10">刪除</th>
+                                            <th className="border p-2 w-16">月份</th>
+                                            <th className="border p-2 w-24">承辦單位</th>
+                                            <th className="border p-2 w-64">課程名稱</th>
+                                            <th className="border p-2 w-24">訓練對象</th>
+                                            <th className="border p-2 w-32">日期 (範例:1/6-19)</th>
+                                            <th className="border p-2 w-32">地點</th>
+                                            <th className="border p-2 w-16">梯數</th>
+                                            <th className="border p-2 w-16">每梯人數</th>
+                                            <th className="border p-2 w-16 bg-gray-50">合計人數</th>
+                                            <th className="border p-2 w-16">總時數</th>
+                                            <th className="border p-2 w-20 text-blue-700 font-bold">調用人力</th>
+                                            <th className="border p-2 w-20">外縣市</th>
+                                            <th className="border p-2">備註</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sheet1.map((row) => (
+                                            <tr key={row.id} className="hover:bg-blue-50 transition-colors">
+                                                <td className="border text-center"><button onClick={() => deleteRow(setSheet1, row.id)} className="text-gray-400 hover:text-red-500 p-1"><IconTrash/></button></td>
+                                                <td className="border"><InputCell value={row.month} onChange={(v) => handleInputChange(setSheet1, row.id, 'month', v)} placeholder="1" /></td>
+                                                <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet1, row.id, 'unit', v)} placeholder="單位" /></td>
+                                                <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet1, row.id, 'name', v)} placeholder="課程名稱" /></td>
+                                                <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet1, row.id, 'target', v)} placeholder="對象" /></td>
+                                                <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet1, row.id, 'date', v)} placeholder="1/6-19" /></td>
+                                                <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet1, row.id, 'location', v)} placeholder="地點" /></td>
+                                                <td className="border"><InputCell value={row.batches} onChange={(v) => handleInputChange(setSheet1, row.id, 'batches', v)} type="number" /></td>
+                                                <td className="border"><InputCell value={row.perBatch} onChange={(v) => handleInputChange(setSheet1, row.id, 'perBatch', v)} type="number" /></td>
+                                                <td className="border bg-gray-50 text-center text-gray-600">{row.batches * row.perBatch || 0}</td>
+                                                <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet1, row.id, 'hours', v)} type="number" /></td>
+                                                <td className="border bg-blue-50"><InputCell value={row.manpower} onChange={(v) => handleInputChange(setSheet1, row.id, 'manpower', v)} type="number" className="font-medium text-blue-800"/></td>
+                                                <td className="border text-center"><input type="checkbox" checked={row.external} onChange={(e) => handleInputChange(setSheet1, row.id, 'external', e.target.checked)} /></td>
+                                                <td className="border"><InputCell value={row.note} onChange={(v) => handleInputChange(setSheet1, row.id, 'note', v)} placeholder="備註" /></td>
+                                            </tr>
+                                        ))}
+                                        <tr><td colSpan="14" className="border p-2 bg-gray-50"><button onClick={() => addRow(setSheet1, { ...initialSheet1[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline"><IconPlus/> 新增課程</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {/* TAB 2 */}
+                        {activeTab === 2 && (
+                            <div className="overflow-auto max-h-[700px]">
+                                <table className="w-full border-collapse text-sm min-w-[1200px]">
+                                    <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
+                                        <tr>
+                                            <th className="border p-2 w-10">刪除</th>
+                                            <th className="border p-2 w-16">月份</th>
+                                            <th className="border p-2 w-24">承辦單位</th>
+                                            <th className="border p-2 w-64">課程名稱</th>
+                                            <th className="border p-2 w-32">訓練對象</th>
+                                            <th className="border p-2 w-32">課程日期</th>
+                                            <th className="border p-2 w-32">訓練地點</th>
+                                            <th className="border p-2 w-16">梯數</th>
+                                            <th className="border p-2 w-16">每梯人數</th>
+                                            <th className="border p-2 w-16 bg-gray-50">合計人數</th>
+                                            <th className="border p-2 w-16">總時數</th>
+                                            <th className="border p-2 w-24 text-orange-700 font-bold">教官人數</th>
+                                            <th className="border p-2">備註</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sheet2.map((row) => (
+                                            <tr key={row.id} className="hover:bg-orange-50/30 transition-colors">
+                                                <td className="border text-center"><button onClick={() => deleteRow(setSheet2, row.id)} className="text-gray-400 hover:text-red-500 p-1"><IconTrash/></button></td>
+                                                <td className="border"><InputCell value={row.month} onChange={(v) => handleInputChange(setSheet2, row.id, 'month', v)} placeholder="1" /></td>
+                                                <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet2, row.id, 'unit', v)} placeholder="科室" /></td>
+                                                <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet2, row.id, 'name', v)} placeholder="課程名稱" /></td>
+                                                <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet2, row.id, 'target', v)} placeholder="對象" /></td>
+                                                <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet2, row.id, 'date', v)} placeholder="1/13-15" /></td>
+                                                <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet2, row.id, 'location', v)} placeholder="地點" /></td>
+                                                <td className="border"><InputCell value={row.batches} onChange={(v) => handleInputChange(setSheet2, row.id, 'batches', v)} type="number" /></td>
+                                                <td className="border"><InputCell value={row.perBatch} onChange={(v) => handleInputChange(setSheet2, row.id, 'perBatch', v)} type="number" /></td>
+                                                <td className="border bg-gray-50 text-center">{row.batches * row.perBatch || 0}</td>
+                                                <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet2, row.id, 'hours', v)} type="number" /></td>
+                                                <td className="border bg-orange-50"><InputCell value={row.instructorNeed} onChange={(v) => handleInputChange(setSheet2, row.id, 'instructorNeed', v)} type="number" className="font-medium text-orange-800"/></td>
+                                                <td className="border"><InputCell value={row.note} onChange={(v) => handleInputChange(setSheet2, row.id, 'note', v)} placeholder="備註" /></td>
+                                            </tr>
+                                        ))}
+                                        <tr><td colSpan="13" className="border p-2 bg-gray-50"><button onClick={() => addRow(setSheet2, { ...initialSheet2[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline"><IconPlus/> 新增課程</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {/* TAB 3 */}
+                        {activeTab === 3 && (
+                            <div className="overflow-auto max-h-[700px]">
+                                <table className="w-full border-collapse text-sm min-w-[1000px]">
+                                    <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
+                                        <tr>
+                                            <th className="border p-2 w-10">刪除</th>
+                                            <th className="border p-2 w-24">承辦單位</th>
+                                            <th className="border p-2 w-64">重大活動演習名稱</th>
+                                            <th className="border p-2 w-32">參加對象</th>
+                                            <th className="border p-2 w-48">日期 (格式: 1/16)</th>
+                                            <th className="border p-2 w-16">天數</th>
+                                            <th className="border p-2 w-16">時數</th>
+                                            <th className="border p-2 w-32 bg-red-50 text-red-700 font-bold">每日調用人數</th>
+                                            <th className="border p-2 w-48">地點</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sheet3.map((row) => (
+                                            <tr key={row.id} className="hover:bg-red-50/30 transition-colors">
+                                                <td className="border text-center"><button onClick={() => deleteRow(setSheet3, row.id)} className="text-gray-400 hover:text-red-500 p-1"><IconTrash/></button></td>
+                                                <td className="border"><InputCell value={row.unit} onChange={(v) => handleInputChange(setSheet3, row.id, 'unit', v)} placeholder="單位" /></td>
+                                                <td className="border"><InputCell value={row.name} onChange={(v) => handleInputChange(setSheet3, row.id, 'name', v)} placeholder="活動名稱" /></td>
+                                                <td className="border"><InputCell value={row.target} onChange={(v) => handleInputChange(setSheet3, row.id, 'target', v)} placeholder="對象" /></td>
+                                                <td className="border"><InputCell value={row.date} onChange={(v) => handleInputChange(setSheet3, row.id, 'date', v)} placeholder="1/16" /></td>
+                                                <td className="border"><InputCell value={row.days} onChange={(v) => handleInputChange(setSheet3, row.id, 'days', v)} type="number" /></td>
+                                                <td className="border"><InputCell value={row.hours} onChange={(v) => handleInputChange(setSheet3, row.id, 'hours', v)} type="number" /></td>
+                                                <td className="border bg-red-50"><InputCell value={row.dailyManpower} onChange={(v) => handleInputChange(setSheet3, row.id, 'dailyManpower', v)} type="number" className="font-bold text-red-700"/></td>
+                                                <td className="border"><InputCell value={row.location} onChange={(v) => handleInputChange(setSheet3, row.id, 'location', v)} placeholder="地點" /></td>
+                                            </tr>
+                                        ))}
+                                        <tr><td colSpan="9" className="border p-2 bg-gray-50"><button onClick={() => addRow(setSheet3, { ...initialSheet3[0], id: null, name:'', date:'' })} className="flex items-center gap-1 text-blue-600 text-sm font-bold hover:underline"><IconPlus/> 新增活動</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {/* TAB 4 - GANTT */}
+                        {activeTab === 4 && (
+                            <div className="overflow-x-auto max-h-[750px] pb-10">
+                                <div className="min-w-[1600px]">
+                                    <div className="bg-yellow-50 border-b border-yellow-200 p-3 text-sm text-yellow-800 flex justify-between items-center sticky left-0">
+                                        <div className="flex items-center gap-2">
+                                            <IconAlert /> <span><strong>自動運算模式：</strong> 系統已依據附件1-3自動填入。 <span className="ml-2 text-yellow-900/70">若有特殊狀況，可直接點擊格子修改。</span></span>
+                                        </div>
+                                        <div className="text-xs text-gray-500">最後更新：{lastUpdated.toLocaleTimeString()}</div>
+                                    </div>
+                                    <table className="w-full border-collapse text-sm table-fixed">
+                                        <thead className="bg-gray-100 sticky top-0 z-20 shadow-sm">
+                                            <tr>
+                                                <th className="border p-1 w-16 bg-gray-200">月份</th>
+                                                <th className="border p-1 w-80 text-left pl-2 bg-gray-200">訓練班期 / 活動名稱</th>
+                                                {Array.from({ length: 31 }, (_, i) => (<th key={i} className="border p-0 w-8 text-center text-xs text-gray-500 font-normal bg-gray-100">{i + 1}</th>))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {sheet4.length === 0 ? (<tr><td colSpan="33" className="p-8 text-center text-gray-400">尚無資料</td></tr>) : (
+                                                sheet4.map((row, rowIndex) => (
+                                                    <tr key={row.id} className="hover:bg-gray-50 border-b border-gray-200">
+                                                        <td className="border text-center font-bold text-gray-700 bg-gray-50">{row.month}月</td>
+                                                        <td className="border px-2 py-1 text-xs truncate font-medium text-gray-800" title={row.itemName}>
+                                                            <span className={`inline-block w-2 h-2 rounded-full mr-2 ${row.source === 'sheet3' ? 'bg-red-500' : row.source === 'sheet2' ? 'bg-orange-400' : 'bg-blue-500'}`}></span>
+                                                            {row.itemName}
+                                                        </td>
+                                                        {row.days.map((dayVal, dayIndex) => (
+                                                            <td key={dayIndex} className={`border p-0 text-center ${dayVal ? 'bg-white' : 'bg-gray-50/30'}`}>
+                                                                <input type="text" value={dayVal} onChange={(e) => { const newS = [...sheet4]; newS[rowIndex].days[dayIndex] = e.target.value; setSheet4(newS); }}
+                                                                    className={`w-full h-full text-center text-xs focus:bg-blue-100 outline-none ${dayVal ? 'text-gray-900 font-medium' : 'text-transparent hover:text-gray-400'}`} />
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))
+                                            )}
+                                            <tr className="bg-gray-800 text-white font-bold sticky bottom-0 z-20">
+                                                <td colSpan="2" className="border border-gray-700 p-1 text-right pr-3 text-xs">每日人力總缺口</td>
+                                                {Array.from({ length: 31 }, (_, i) => {
+                                                    const sum = sheet4.reduce((acc, row) => acc + (parseInt(row.days[i]) || 0), 0);
+                                                    const isHigh = sum > 100; const isMed = sum > 50 && sum <= 100;
+                                                    return (<td key={i} className={`border border-gray-600 text-center text-xs p-1 ${isHigh ? 'bg-red-600 animate-pulse' : isMed ? 'bg-yellow-600' : ''}`}>{sum > 0 ? sum : ''}</td>);
+                                                })}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // 6. 渲染 React 到頁面上
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
