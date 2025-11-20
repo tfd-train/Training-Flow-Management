@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臺北市政府消防局 114年教育訓練管理系統 (完整功能版)</title>
+    <title>臺北市政府消防局 114年教育訓練管理系統 (下載修復版)</title>
     
-    <!-- 引入 SheetJS 用於 Excel 匯出 -->
+    <!-- 核心：引入 Excel 處理引擎 (必須連網) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -116,6 +116,7 @@
             width: 100%;
         }
 
+        /* 強制表格最小寬度 */
         #table1 { min-width: 2000px; }
         #table2 { min-width: 1800px; }
         #table3 { min-width: 1400px; }
@@ -133,9 +134,7 @@
             z-index: 10;
             height: 50px;
             padding: 4px;
-            /* 列印時強制背景色 */
             -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact;
         }
 
         .th-content {
@@ -158,13 +157,20 @@
 
         /* --- 輸入框 --- */
         input[type="text"], input[type="number"] {
-            width: 100%; height: 100%; border: none; outline: none;
-            background: transparent; text-align: center; font-family: inherit; font-size: 13px;
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            font-family: inherit;
+            font-size: 13px;
         }
         input:focus { background-color: #eff6ff; box-shadow: inset 0 0 0 2px var(--accent); }
+        
         .align-left input { text-align: left; padding-left: 8px; }
 
-        /* --- 日期與排除六日複合欄位 --- */
+        /* --- 日期與排除六日 --- */
         .date-cell { display: flex; flex-direction: column; height: 100%; }
         .date-cell input { flex: 1; border-bottom: 1px dotted #e2e8f0; }
         .date-cell label {
@@ -176,34 +182,32 @@
         .date-cell input[type="checkbox"] { width: auto; height: auto; margin-right: 4px; }
 
         /* --- 仿 Excel 勾選框 --- */
-        .td-checkbox { text-align: center !important; vertical-align: middle !important; }
+        .td-checkbox {
+            text-align: center !important;
+            vertical-align: middle !important;
+            padding: 0 !important;
+        }
         .excel-checkbox {
             appearance: none; -webkit-appearance: none;
             width: 18px; height: 18px; border: 1px solid #000; background-color: white;
-            cursor: pointer; display: inline-block; position: relative; vertical-align: middle;
+            cursor: pointer; display: inline-block; position: relative; vertical-align: middle; margin: 0;
         }
         .excel-checkbox:checked::after {
             content: '✓'; font-size: 16px; font-weight: 900; color: #000;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
+        .excel-checkbox:hover { background-color: #f1f5f9; }
 
-        /* --- 甘特圖樣式 (灰色版) --- */
+        /* --- 甘特圖樣式 (深灰無色版) --- */
         .gantt-header-month td {
             background-color: #e2e8f0; font-weight: bold; text-align: left;
             padding-left: 15px; border-top: 2px solid #475569; border-bottom: 1px solid #94a3b8;
-            color: #1e293b;
-            -webkit-print-color-adjust: exact;
+            color: #1e293b; -webkit-print-color-adjust: exact;
         }
         .gantt-visual-row { height: 14px; }
         .gantt-data-row { height: 30px; }
         .gantt-cell-bar { border-right: 1px solid #e2e8f0; }
-        
-        /* 灰色色塊 */
-        .bar-active { 
-            background-color: #64748b !important; 
-            border-color: #475569; 
-            -webkit-print-color-adjust: exact;
-        }
+        .bar-active { background-color: #64748b !important; border-color: #475569; -webkit-print-color-adjust: exact; }
         .gantt-num input { font-weight: bold; color: #0f172a; font-size: 12px; }
 
         /* 每日統計列 */
@@ -213,7 +217,7 @@
             -webkit-print-color-adjust: exact;
         }
 
-        /* --- 按鈕與色彩 --- */
+        /* --- 按鈕 --- */
         .btn-action {
             padding: 6px 16px; border-radius: 4px; border: none; color: white; 
             font-size: 13px; cursor: pointer; margin-left: 8px; display: flex; align-items: center; gap: 5px;
@@ -229,33 +233,23 @@
         .text-manpower { color: #1d4ed8; font-weight: bold; }
         .text-danger { color: #ef4444; font-weight: bold; }
 
-        /* =========================================
-           列印專用樣式 (PDF 下載)
-           ========================================= */
+        /* --- 列印專用樣式 (下載 PDF 用) --- */
         @media print {
-            @page { size: landscape; margin: 10mm; }
-            body { background: white; height: auto; overflow: visible; }
+            @page { size: landscape; margin: 5mm; }
+            body { background: white; overflow: visible; height: auto; }
             .sidebar, .btn-action, .btn-add-row, .del-btn, .weekend-check { display: none !important; }
-            .main-content { width: 100%; height: auto; overflow: visible; }
-            .workspace { padding: 0; height: auto; overflow: visible; display: block; }
-            .view-section { 
-                border: none; box-shadow: none; display: none; height: auto; 
-                overflow: visible; 
-            }
-            /* 只顯示當前啟動的分頁 */
+            .main-content { width: 100%; overflow: visible; height: auto; }
+            .workspace { padding: 0; overflow: visible; height: auto; display: block; }
+            .view-section { display: none; border: none; box-shadow: none; height: auto; overflow: visible; }
             .view-section.active { display: block; }
             .table-container { overflow: visible; height: auto; }
-            .top-bar { border: none; height: auto; padding: 10px 0; }
-            table { width: 100%; table-layout: auto; } /* 列印時自動調整寬度 */
-            /* 強制列印背景色 */
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .top-bar { border: none; height: auto; padding: 0 0 10px 0; }
+            table { width: 100%; table-layout: auto; }
             th { color: #000; border: 1px solid #000; }
             td { border: 1px solid #000; }
-            /* 隱藏排除六日的 checkbox，只留日期文字 */
-            .date-cell input[type="text"] { border-bottom: none; text-align: center; }
+            .date-cell input { border-bottom: none; }
             .date-cell label { display: none; }
         }
-
     </style>
 </head>
 <body>
@@ -279,8 +273,8 @@
         <div class="top-bar">
             <div class="page-title" id="pageTitle">附件1 - 消防人員訓練</div>
             <div>
-                <button class="btn-action" style="background:#16a34a" onclick="exportExcel()">📥 下載 Excel</button>
-                <button class="btn-action" style="background:#dc2626" onclick="window.print()">🖨️ 下載 PDF</button>
+                <button class="btn-action" style="background:#16a34a" onclick="exportRealExcel()">📥 下載 Excel (真實)</button>
+                <button class="btn-action" style="background:#dc2626" onclick="window.print()">🖨️ 下載 PDF / 列印</button>
             </div>
         </div>
 
@@ -402,7 +396,7 @@
     </div>
 
     <script>
-        // --- 初始模擬資料 ---
+        // --- 資料變數 ---
         let d1 = [
             {m:'1', unit:'訓練中心', name:'火災搶救初級班', date:'1/6-19', mp:20, exclude:true, ext:false},
             {m:'1', unit:'訓練中心', name:'112年警特班', date:'1/10-24', mp:4, exclude:false, ext:false}
@@ -414,7 +408,7 @@
             {unit:'秘書室', name:'119消防節慶祝大會', date:'1/16', mp:25, exclude:false}
         ];
 
-        // --- Tab 切換 ---
+        // --- UI 切換 ---
         function switchTab(idx, btn) {
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
             btn.classList.add('active');
@@ -520,7 +514,39 @@
             });
         }
 
-        // --- Render Gantt ---
+        // --- 日期解析 (共用) ---
+        const parseDates = (str, month, exclude) => {
+            let days = [];
+            if(!str) return days;
+            try {
+                let s = str.replace(/\(.*\)/g, '').trim();
+                let rng = s.match(/(\d+)\/(\d+)-(\d+)/);
+                let sgl = s.match(/(\d+)\/(\d+)/);
+                
+                let candidates = [];
+                if(rng) {
+                     for(let i=+rng[2]; i<=+rng[3]; i++) candidates.push(i);
+                } else if(sgl) {
+                    candidates.push(+sgl[2]);
+                } else if(s.includes(',')) {
+                    s.split(',').forEach(p => { let m=p.match(/\d+$/); if(m) candidates.push(+m[0]); });
+                }
+
+                // 2025年排除六日
+                candidates.forEach(day => {
+                    if(exclude) {
+                        let dt = new Date(2025, month-1, day);
+                        let wd = dt.getDay();
+                        if(wd !== 0 && wd !== 6) days.push(day);
+                    } else {
+                        days.push(day);
+                    }
+                });
+            } catch(e){}
+            return days;
+        };
+
+        // --- 甘特圖渲染 ---
         function renderGantt() {
             const header = document.getElementById('ganttHeader');
             header.innerHTML = '<th style="width:250px">班期 / 活動名稱</th>';
@@ -529,42 +555,15 @@
             const tbody = document.getElementById('tbody4');
             tbody.innerHTML = '';
 
-            // 解析函數
-            const parse = (str, month, exclude) => {
-                let days = [];
-                if(!str) return days;
-                try {
-                    let s = str.replace(/\(.*\)/g, '').trim();
-                    let rng = s.match(/(\d+)\/(\d+)-(\d+)/);
-                    let sgl = s.match(/(\d+)\/(\d+)/);
-                    
-                    let candidates = [];
-                    if(rng) for(let i=+rng[2]; i<=+rng[3]; i++) candidates.push(i);
-                    else if(sgl) candidates.push(+sgl[2]);
-                    else if(s.includes(',')) s.split(',').forEach(p => { let m=p.match(/\d+$/); if(m) candidates.push(+m[0]); });
-
-                    candidates.forEach(day => {
-                        if(exclude) {
-                            let dt = new Date(2025, month-1, day);
-                            let wd = dt.getDay();
-                            if(wd !== 0 && wd !== 6) days.push(day);
-                        } else {
-                            days.push(day);
-                        }
-                    });
-                } catch(e){}
-                return days;
-            };
-
-            // 收集資料
+            // 資料收集
             let allRows = [];
-            d1.forEach(r => { if(r.date && r.mp) allRows.push({m:r.m||'1', n:r.name, ds:parse(r.date, r.m||1, r.exclude), v:r.mp}); });
-            d2.forEach(r => { if(r.date && r.inst) allRows.push({m:r.m||'1', n:r.name, ds:parse(r.date, r.m||1, r.exclude), v:r.inst}); });
+            d1.forEach(r => { if(r.date && r.mp) allRows.push({m:r.m||'1', n:r.name, ds:parseDates(r.date, r.m||1, r.exclude), v:r.mp}); });
+            d2.forEach(r => { if(r.date && r.inst) allRows.push({m:r.m||'1', n:r.name, ds:parseDates(r.date, r.m||1, r.exclude), v:r.inst}); });
             d3.forEach(r => { 
                 if(r.date && r.mp) {
                     let mMatch = r.date.match(/^(\d+)/);
                     let m = mMatch ? mMatch[1] : '1';
-                    allRows.push({m:m, n:r.name, ds:parse(r.date, m, r.exclude), v:r.mp}); 
+                    allRows.push({m:m, n:r.name, ds:parseDates(r.date, m, r.exclude), v:r.mp}); 
                 }
             });
 
@@ -572,7 +571,6 @@
             for(let i=1; i<=12; i++) grouped[i] = [];
             allRows.forEach(r => { if(grouped[r.m]) grouped[r.m].push(r); });
 
-            // 渲染
             for(let m=1; m<=12; m++) {
                 if(grouped[m].length === 0) continue;
                 tbody.innerHTML += `<tr class="gantt-header-month"><td colspan="32">${m} 月份</td></tr>`;
@@ -605,45 +603,79 @@
         
         renderAll();
 
-        // --- EXCEL 匯出功能 (SheetJS) ---
-        function exportExcel() {
+        // --- EXCEL 匯出 (真實實作) ---
+        function exportRealExcel() {
+            if(typeof XLSX === 'undefined') {
+                alert('錯誤：Excel 引擎未載入。請檢查網路連線。');
+                return;
+            }
+
             const wb = XLSX.utils.book_new();
-            
+
             // 1. 附件1
-            const ws1_data = [["項次","月份","承辦單位","課程名稱","訓練對象","課程日期","上課地點","梯數","每梯人數","合計人數","每天時數","每梯時數","合計時數","預計調用人數","是否提供宜基北桃參訓","暫訂新北","暫訂基隆","暫訂桃園","暫訂宜蘭","備註"]];
-            d1.forEach((r, i) => {
-                ws1_data.push([i+1, r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pBatch, r.batch*r.pBatch, r.dHour, r.bHour, r.batch*r.bHour, r.mp, r.ext?'是':'否', r.nt, r.kl, r.ty, r.yl, r.note]);
-            });
-            const ws1 = XLSX.utils.aoa_to_sheet(ws1_data);
+            const h1 = ["項次","月份","承辦單位","課程名稱","訓練對象","課程日期","上課地點","梯數","每梯人數","合計人數","每天時數","每梯時數","合計時數","預計調用人數","是否提供宜基北桃參訓","暫訂新北","暫訂基隆","暫訂桃園","暫訂宜蘭","備註"];
+            const d1_map = d1.map((r,i) => [i+1, r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pBatch, (r.batch*r.pBatch)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.mp, r.ext?'是':'否', r.nt, r.kl, r.ty, r.yl, r.note]);
+            const ws1 = XLSX.utils.aoa_to_sheet([h1, ...d1_map]);
             XLSX.utils.book_append_sheet(wb, ws1, "附件1-消防人員");
 
             // 2. 附件2
-            const ws2_data = [["序號","月份","承辦單位","課程名稱","訓練對象","課程日期","訓練地點","梯數","每梯人數","合計人數","每天時數","每梯時數","合計時數","調用教官人數","是否提供跨縣市","備註"]];
-            d2.forEach((r, i) => {
-                ws2_data.push([i+1, r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pBatch, r.batch*r.pBatch, r.dHour, r.bHour, r.batch*r.bHour, r.inst, r.ext?'是':'否', r.note]);
-            });
-            const ws2 = XLSX.utils.aoa_to_sheet(ws2_data);
+            const h2 = ["序號","月份","承辦單位","課程名稱","訓練對象","課程日期","訓練地點","梯數","每梯人數","合計人數","每天時數","每梯時數","合計時數","調用教官人數","是否提供跨縣市","備註"];
+            const d2_map = d2.map((r,i) => [i+1, r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pBatch, (r.batch*r.pBatch)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.inst, r.ext?'是':'否', r.note]);
+            const ws2 = XLSX.utils.aoa_to_sheet([h2, ...d2_map]);
             XLSX.utils.book_append_sheet(wb, ws2, "附件2-非消防");
 
             // 3. 附件3
-            const ws3_data = [["序號","承辦單位","重大活動名稱","參加對象","日期","天數","時數","每日調用外勤人數","地點"]];
-            d3.forEach((r, i) => {
-                ws3_data.push([i+1, r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc]);
-            });
-            const ws3 = XLSX.utils.aoa_to_sheet(ws3_data);
+            const h3 = ["序號","承辦單位","重大活動名稱","參加對象","日期","天數","時數","每日調用外勤人數","地點"];
+            const d3_map = d3.map((r,i) => [i+1, r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc]);
+            const ws3 = XLSX.utils.aoa_to_sheet([h3, ...d3_map]);
             XLSX.utils.book_append_sheet(wb, ws3, "附件3-重大活動");
 
-            // 4. 甘特圖 (簡易數據版)
-            const ws4_data = [["月份", "活動名稱", ...Array.from({length:31}, (_,i)=>i+1)]];
+            // 4. 甘特圖 (完整計算邏輯)
+            let ganttExportData = [];
+            // 表頭 1~31
+            let headerRow = ["月份", "活動名稱"];
+            for(let i=1; i<=31; i++) headerRow.push(i);
+            ganttExportData.push(headerRow);
+
+            // 收集資料
+            let allGanttRows = [];
+            d1.forEach(r => { if(r.date && r.mp) allGanttRows.push({m:r.m||'1', n:r.name, ds:parseDates(r.date, r.m||1, r.exclude), v:r.mp}); });
+            d2.forEach(r => { if(r.date && r.inst) allGanttRows.push({m:r.m||'1', n:r.name, ds:parseDates(r.date, r.m||1, r.exclude), v:r.inst}); });
+            d3.forEach(r => { if(r.date && r.mp) { let m=r.date.match(/^(\d+)/); allGanttRows.push({m:m?m[1]:'1', n:r.name, ds:parseDates(r.date, m?m[1]:1, r.exclude), v:r.mp}); }});
             
-            // 這裡需要簡單重跑一次資料收集邏輯，但只為了匯出
-            let ganttRows = [];
-            // (Copy logic from renderGantt but simplified)
-            // ...為節省篇幅，這裡簡化為直接輸出原始資料...
-            // 實際專案建議在這裡重組 ganttData 並 push 進 ws4_data
-            
-            // 匯出檔案
-            XLSX.writeFile(wb, "114年訓練流路表.xlsx");
+            // 分組
+            let gGrouped = {};
+            allGanttRows.forEach(r => { if(!gGrouped[r.m]) gGrouped[r.m]=[]; gGrouped[r.m].push(r); });
+
+            // 填入資料
+            Object.keys(gGrouped).sort((a,b)=>a-b).forEach(m => {
+                ganttExportData.push([`${m}月份`, ""]); // 月份標題
+                let mSum = Array(32).fill(0);
+                
+                gGrouped[m].forEach(r => {
+                    let rowArr = ["", r.n];
+                    for(let i=1; i<=31; i++) {
+                        if(r.ds.includes(i)) {
+                            rowArr.push(r.v);
+                            mSum[i] += parseInt(r.v);
+                        } else {
+                            rowArr.push("");
+                        }
+                    }
+                    ganttExportData.push(rowArr);
+                });
+
+                // 統計列
+                let sumRow = ["", "每日統計"];
+                for(let i=1; i<=31; i++) sumRow.push(mSum[i]>0 ? mSum[i] : "");
+                ganttExportData.push(sumRow);
+                ganttExportData.push([]); // 空行
+            });
+
+            const ws4 = XLSX.utils.aoa_to_sheet(ganttExportData);
+            XLSX.utils.book_append_sheet(wb, ws4, "甘特圖數據");
+
+            XLSX.writeFile(wb, "114年訓練流路總表.xlsx");
         }
     </script>
 </body>
