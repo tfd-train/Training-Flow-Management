@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>臺北市政府消防局 114年教育訓練管理系統</title>
     
-    <!-- 核心工具庫 -->
     <!-- 1. ExcelJS (樣式匯出) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <!-- 2. FileSaver (存檔) -->
@@ -14,242 +13,109 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
-        /* --- 核心變數 --- */
-        :root {
-            --sidebar-bg: #1e293b;
-            --active-item: #334155;
-            --accent: #3b82f6;
-            --bg-color: #f1f5f9;
-            --border-color: #94a3b8; /* 加深邊框顏色 */
-            --header-bg: #f8fafc;
-        }
+        :root { --sidebar-bg: #1e293b; --active-item: #334155; --accent: #3b82f6; --bg-color: #f1f5f9; --border-color: #64748b; --header-bg: #f8fafc; }
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background-color: var(--bg-color); margin: 0; display: flex; height: 100vh; overflow: hidden; color: #333; }
 
-        body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            color: #333;
-        }
-
-        /* --- Loading 遮罩 --- */
-        #loading {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; 
-            display: none; justify-content: center; align-items: center; 
-            color: white; flex-direction: column; font-size: 18px; backdrop-filter: blur(4px);
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #fff; 
-            border-top-color: var(--accent); border-radius: 50%; 
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
+        /* Loading */
+        #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; font-size: 18px; backdrop-filter: blur(4px); }
+        .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- 側邊欄 --- */
-        .sidebar {
-            width: 240px; background-color: var(--sidebar-bg); color: white;
-            display: flex; flex-direction: column; flex-shrink: 0;
-        }
+        /* Layout */
+        .sidebar { width: 240px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; background-color: #0f172a; border-bottom: 1px solid #334155; }
         .sidebar-header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
-        
-        .nav-item {
-            padding: 15px 20px; cursor: pointer; border-left: 4px solid transparent;
-            color: #94a3b8; display: flex; align-items: center; gap: 10px;
-            transition: 0.2s; font-size: 14px;
-        }
+        .nav-item { padding: 15px 20px; cursor: pointer; border-left: 4px solid transparent; color: #94a3b8; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-size: 14px; }
         .nav-item:hover { background-color: var(--active-item); color: white; }
         .nav-item.active { background-color: var(--active-item); color: var(--accent); border-left-color: var(--accent); font-weight: bold; }
 
-        /* --- 主內容區 --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-bar {
-            height: 55px; background: white; border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 25px;
-        }
+        .top-bar { height: 55px; background: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; }
         .page-title { font-size: 18px; font-weight: 600; color: #1e293b; }
         .toolbar-group { display: flex; gap: 8px; align-items: center; }
 
         .workspace { flex: 1; padding: 20px; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* 視圖切換 */
-        .view-section {
-            display: none; height: 100%; flex-direction: column; background: white;
-            border: 1px solid var(--border-color); border-radius: 4px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden;
-        }
+        .view-section { display: none; height: 100%; flex-direction: column; background: white; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         .view-section.active { display: flex; }
         .table-container { flex: 1; overflow: auto; }
 
-        /* --- 表格通用樣式 (加深邊框) --- */
+        /* Tables */
         table { border-collapse: collapse; font-size: 13px; table-layout: fixed; width: 100%; }
-        
-        /* 強制最小寬度 */
-        #table1 { min-width: 2000px; } #table2 { min-width: 1800px; } #table3 { min-width: 1400px; } #table4 { min-width: 1600px; }
+        #table1 { min-width: 2000px; } #table2 { min-width: 1800px; } #table3 { min-width: 1400px; } 
+        /* 甘特圖寬度由 colgroup 決定 */
+        #table4 { width: auto; min-width: 100%; table-layout: fixed; }
 
-        th {
-            background-color: var(--header-bg); color: #1e293b; font-weight: 700;
-            border: 1px solid #64748b; /* 深灰框 */
-            text-align: center; vertical-align: middle;
-            position: sticky; top: 0; z-index: 10; height: 50px; padding: 4px;
-        }
+        th { background-color: var(--header-bg); color: #1e293b; font-weight: 700; border: 1px solid var(--border-color); text-align: center; vertical-align: middle; position: sticky; top: 0; z-index: 10; height: 50px; padding: 4px; }
         .th-content { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; line-height: 1.4; white-space: normal; }
-        
-        td { 
-            border: 1px solid #64748b; /* 深灰框，列印才清楚 */
-            padding: 0; height: 36px; background: white; position: relative; 
-        }
+        td { border: 1px solid var(--border-color); padding: 0; height: 36px; background: white; position: relative; }
 
-        /* --- 輸入框 --- */
-        input[type="text"], input[type="number"] {
-            width: 100%; height: 100%; border: none; outline: none;
-            background: transparent; text-align: center; font-family: inherit; font-size: 13px; color: #000;
-        }
+        /* Inputs */
+        input[type="text"], input[type="number"] { width: 100%; height: 100%; border: none; outline: none; background: transparent; text-align: center; font-family: inherit; font-size: 13px; color: #000; }
         input:focus { background-color: #eff6ff; box-shadow: inset 0 0 0 2px var(--accent); }
         .align-left input { text-align: left; padding-left: 8px; }
-
-        /* --- 日期與按鈕 --- */
-        .date-cell { display: flex; height: 100%; }
-        .date-cell input { flex: 1; }
-        .btn-calendar {
-            width: 30px; border: none; border-left: 1px solid #64748b; cursor: pointer;
-            background: #f1f5f9; font-size: 14px; display: flex; align-items: center; justify-content: center;
-        }
+        
+        .date-cell { display: flex; height: 100%; } .date-cell input { flex: 1; }
+        .btn-calendar { width: 30px; border: none; border-left: 1px solid var(--border-color); cursor: pointer; background: #f1f5f9; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         .btn-calendar:hover { background: #e2e8f0; }
 
-        /* --- 仿 Excel 勾選框 --- */
         .td-checkbox { text-align: center !important; vertical-align: middle !important; padding: 0 !important; }
-        .excel-checkbox {
-            appearance: none; -webkit-appearance: none; width: 18px; height: 18px;
-            border: 1px solid #000; background-color: white; cursor: pointer;
-            display: inline-block; position: relative; vertical-align: middle; margin: 0;
-        }
-        .excel-checkbox:checked::after {
-            content: '✓'; font-size: 16px; font-weight: 900; color: #000;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        }
+        .excel-checkbox { appearance: none; width: 18px; height: 18px; border: 1px solid #000; background-color: white; cursor: pointer; display: inline-block; vertical-align: middle; margin: 0; }
+        .excel-checkbox:checked::after { content: '✓'; font-size: 16px; font-weight: 900; color: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-        /* --- 甘特圖樣式 (重構版) --- */
-        /* 月份標題 */
-        .gantt-month-header td {
-            background-color: #e2e8f0; font-weight: bold; text-align: left; padding-left: 15px;
-            border: 2px solid #475569; color: #1e293b; font-size: 14px;
-        }
-        
-        /* 視覺對齊修正 */
+        /* Gantt Styles */
+        .gantt-name-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 10px; text-align: left; font-size: 13px; border-right: 1px solid var(--border-color); }
+        .gantt-month-header td { background-color: #e2e8f0; font-weight: bold; text-align: left; padding-left: 15px; border: 2px solid #475569; color: #1e293b; font-size: 14px; }
         .gantt-visual-row { height: 15px; }
         .gantt-data-row { height: 30px; }
-        
-        /* 格線與色塊 */
-        .gantt-cell-bar { border-right: 1px solid #64748b; border-bottom: none; }
-        .gantt-num { border-top: none; border-right: 1px solid #64748b; }
-        
-        .bar-active { 
-            background-color: #3b82f6 !important; /* 藍色 */
-            border-color: #1d4ed8; 
-            -webkit-print-color-adjust: exact; print-color-adjust: exact; 
-        }
-        
+        .gantt-cell-bar { border-right: 1px solid var(--border-color); border-bottom: none; }
+        .gantt-num { border-top: none; border-right: 1px solid var(--border-color); }
+        .bar-active { background-color: #3b82f6 !important; border-color: #1d4ed8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .gantt-num input { font-weight: bold; color: #000; font-size: 12px; }
+        .stats-row td { background-color: #f1f5f9; border: 2px solid #333; color: #1e40af; font-weight: bold; font-size: 12px; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        tbody.gantt-month-group { break-inside: avoid; page-break-inside: avoid; }
 
-        /* 每日統計列 */
-        .stats-row td {
-            background-color: #f1f5f9; 
-            border: 2px solid #333; /* 粗框突顯 */
-            color: #1e40af; font-weight: bold; font-size: 12px; text-align: center;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
-        }
-
-        /* 避免月份被切斷 (列印關鍵) */
-        tbody.gantt-month-group {
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-
-        /* --- 彈窗樣式 (日期 & 列印) --- */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; width: 420px; padding: 20px; border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 420px; padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { font-weight: bold; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        /* 日曆 Grid */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
-        .day-btn {
-            padding: 8px; border: 1px solid #cbd5e1; background: white; cursor: pointer;
-            text-align: center; font-size: 13px; border-radius: 4px;
-        }
+        .day-btn { padding: 8px; border: 1px solid #cbd5e1; background: white; cursor: pointer; text-align: center; font-size: 13px; border-radius: 4px; }
         .day-btn.active-range { background-color: #dbeafe; color: #1e40af; border-color: #3b82f6; font-weight: bold; }
         .day-btn.excluded { background-color: #64748b; color: white; text-decoration: line-through; border-color: #475569; }
         .day-btn.disabled { background-color: #f8fafc; color: #ccc; cursor: default; }
-
-        /* 列印月份選擇 Grid */
         .print-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        .month-select-btn {
-            padding: 15px; border: 1px solid #cbd5e1; background: white; cursor: pointer;
-            text-align: center; border-radius: 4px; font-weight: bold; color: #475569;
-        }
-        .month-select-btn.selected {
-            background-color: #3b82f6; color: white; border-color: #2563eb;
-            box-shadow: 0 2px 4px rgba(59,130,246,0.3);
-        }
-
+        .month-select-btn { padding: 15px; border: 1px solid #cbd5e1; background: white; cursor: pointer; text-align: center; border-radius: 4px; font-weight: bold; color: #475569; }
+        .month-select-btn.selected { background-color: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 2px 4px rgba(59,130,246,0.3); }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .btn-modal { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 13px; }
         .btn-cancel { background: #e2e8f0; color: #333; }
         .btn-confirm { background: #3b82f6; color: white; }
 
-        /* --- 按鈕與顏色 --- */
-        .btn-action {
-            padding: 8px 16px; border-radius: 4px; border: none; color: white; 
-            font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;
-            font-weight: 500;
-        }
-        .btn-save { background-color: #0f172a; }
-        .btn-import { background-color: #64748b; }
-        .btn-download { background-color: #16a34a; }
-        .btn-print { background-color: #dc2626; }
-        .btn-outline { background: white; border: 1px solid #cbd5e1; color: #333; }
-        .btn-outline:hover { background: #f1f5f9; }
-
-        .btn-add-row { width: 100%; padding: 10px; background: #fff; border: 1px dashed #94a3b8; color: var(--accent); font-weight: bold; cursor: pointer; margin-top: 5px;}
+        /* Buttons */
+        .btn-action { padding: 8px 16px; border-radius: 4px; border: none; color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+        .btn-save { background-color: #0f172a; } .btn-import { background-color: #64748b; } .btn-download { background-color: #16a34a; } .btn-print { background-color: #dc2626; }
+        .btn-outline { background: white; border: 1px solid #cbd5e1; color: #333; } .btn-outline:hover { background: #f1f5f9; }
+        .btn-add-row { width: 100%; padding: 10px; background: #fff; border: 1px dashed #94a3b8; color: var(--accent); font-weight: bold; cursor: pointer; margin-top: 5px; }
         
-        .col-yellow { background-color: #ffffcc; }
-        .col-blue-light { background-color: #e0f2fe; }
-        .col-red-light { background-color: #fee2e2; }
-        .text-manpower { color: #1d4ed8; font-weight: bold; }
-        .text-danger { color: #ef4444; font-weight: bold; }
+        .col-yellow { background-color: #ffffcc; } .col-blue-light { background-color: #e0f2fe; } .col-red-light { background-color: #fee2e2; }
+        .text-manpower { color: #1d4ed8; font-weight: bold; } .text-danger { color: #ef4444; font-weight: bold; }
 
-        /* --- 列印專用 (A3 橫式) --- */
         @media print {
             @page { size: A3 landscape; margin: 10mm; }
-            body { background: white; height: auto; overflow: visible; zoom: 80%; } /* 縮放以塞入更多內容 */
+            body { background: white; height: auto; overflow: visible; zoom: 80%; }
             .sidebar, .top-bar, .btn-add-row, .del-btn, .btn-calendar, #loading { display: none !important; }
-            .main-content, .workspace, .view-section, .table-container { 
-                width: 100%; height: auto; overflow: visible; display: block; padding: 0; margin: 0; border: none; box-shadow: none;
-            }
-            .view-section { display: none; }
-            .view-section.active { display: block; }
-            
-            /* 強制顯示格線與顏色 */
-            table { width: 100%; }
-            th, td { border: 1px solid #000 !important; color: #000 !important; }
+            .main-content, .workspace, .view-section, .table-container { width: 100%; height: auto; overflow: visible; display: block; padding: 0; margin: 0; border: none; box-shadow: none; }
+            .view-section { display: none; } .view-section.active { display: block; }
+            table { width: 100%; } th, td { border: 1px solid #000 !important; color: #000 !important; }
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Loading -->
     <div id="loading"><div class="spinner"></div><div id="loadText">處理中...</div></div>
 
-    <!-- 1. 日期排除彈窗 -->
+    <!-- Modals -->
     <div id="dateModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">排除日期設定</div>
@@ -261,36 +127,25 @@
                 <button class="btn-modal btn-outline" style="padding:4px 8px; font-size:12px;" onclick="applyDateFilter('clear')">清除</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            <div class="modal-footer">
-                <button class="btn-modal btn-cancel" onclick="closeModal('dateModal')">取消</button>
-                <button class="btn-modal btn-confirm" onclick="saveDateModal()">確定</button>
-            </div>
+            <div class="modal-footer"><button class="btn-modal btn-cancel" onclick="closeModal('dateModal')">取消</button><button class="btn-modal btn-confirm" onclick="saveDateModal()">確定</button></div>
         </div>
     </div>
 
-    <!-- 2. 列印/匯出 範圍選擇彈窗 -->
     <div id="printModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">請選擇輸出月份</div>
             <div style="margin-bottom:10px; display:flex; justify-content:space-between;">
-                <span style="font-size:12px; color:#666;">可多選，未選取月份將被隱藏</span>
+                <span style="font-size:12px; color:#666;">未選取月份將被隱藏</span>
                 <button class="btn-modal btn-outline" style="padding:2px 8px; font-size:11px;" onclick="toggleAllMonths()">全選/反選</button>
             </div>
-            <div class="print-month-grid" id="printMonthGrid">
-                <!-- JS 生成 1~12 月按鈕 -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal btn-cancel" onclick="closeModal('printModal')">取消</button>
-                <button class="btn-modal btn-confirm" onclick="executePrintOrExport()">確認執行</button>
-            </div>
+            <div class="print-month-grid" id="printMonthGrid"></div>
+            <div class="modal-footer"><button class="btn-modal btn-cancel" onclick="closeModal('printModal')">取消</button><button class="btn-modal btn-confirm" onclick="executePrintOrExport()">確認執行</button></div>
         </div>
     </div>
 
-    <!-- 側邊欄 -->
+    <!-- UI -->
     <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>教育訓練管理系統</h2>
-        </div>
+        <div class="sidebar-header"><h2>教育訓練管理系統</h2></div>
         <nav>
             <div class="nav-item active" onclick="switchTab(1, this)">1. 消防人員</div>
             <div class="nav-item" onclick="switchTab(2, this)">2. 非消防人員</div>
@@ -299,39 +154,32 @@
         </nav>
     </div>
 
-    <!-- 主內容 -->
     <div class="main-content">
         <div class="top-bar">
             <div class="page-title" id="pageTitle">附件1 - 消防人員</div>
-            <div class="toolbar-group" id="toolbar">
-                <!-- JS 動態插入按鈕 -->
-            </div>
+            <div class="toolbar-group" id="toolbar"></div>
         </div>
 
         <div class="workspace">
-            <!-- 附件 1 -->
+            <!-- Tab 1 -->
             <div id="view1" class="view-section active"><div class="table-container"><table id="table1"><thead><tr><th style="width:40px" class="del-btn">刪</th><th style="width:40px">項次</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:80px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">上課地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:100px" class="col-blue-light"><div class="th-content">預計調用人數<br>(分隊人力)</div></th><th style="width:120px" class="col-yellow"><div class="th-content">是否提供宜基<br>北桃參訓</div></th><th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>新北</div></th><th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>基隆</div></th><th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>桃園</div></th><th style="width:60px" class="col-yellow"><div class="th-content">暫訂<br>宜蘭</div></th><th style="width:150px">備註</th></tr></thead><tbody id="tbody1"></tbody></table></div><button class="btn-add-row" onclick="addRow(1)">+ 新增</button></div>
 
-            <!-- 附件 2 -->
+            <!-- Tab 2 -->
             <div id="view2" class="view-section"><div class="table-container"><table id="table2"><thead><tr><th style="width:40px" class="del-btn">刪</th><th style="width:40px">序號</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:120px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">訓練地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:80px">調用本局<br>教官人數</th><th style="width:100px"><div class="th-content">是否提供<br>跨縣市</div></th><th style="width:150px">備註</th></tr></thead><tbody id="tbody2"></tbody></table></div><button class="btn-add-row" onclick="addRow(2)">+ 新增</button></div>
 
-            <!-- 附件 3 -->
+            <!-- Tab 3 -->
             <div id="view3" class="view-section"><div class="table-container"><table id="table3"><thead><tr><th style="width:40px" class="del-btn">刪</th><th style="width:40px">序號</th><th style="width:100px">承辦單位</th><th style="width:250px">重大活動演習名稱</th><th style="width:150px">參加對象</th><th style="width:140px">日期</th><th style="width:50px">天數</th><th style="width:50px">時數</th><th style="width:100px" class="col-red-light"><div class="th-content">每日調用<br>外勤人數</div></th><th style="width:150px">地點(教室)</th></tr></thead><tbody id="tbody3"></tbody></table></div><button class="btn-add-row" onclick="addRow(3)">+ 新增</button></div>
 
-            <!-- 甘特圖 -->
+            <!-- Tab 4 -->
             <div id="view4" class="view-section">
-                <div style="padding:12px; background:#fffbeb; border-bottom:1px solid #94a3b8; font-size:13px; color:#92400e;">
-                    ⚠️ <strong>說明：</strong> 統計包含附件1~3所有人數。每日統計即使為 0 也會顯示。
-                </div>
+                <div style="padding:12px; background:#fffbeb; border-bottom:1px solid #94a3b8; font-size:13px; color:#92400e;">⚠️ <strong>說明：</strong> 統計包含附件1~3所有人數。列印前請選擇月份。</div>
                 <div class="table-container">
                     <table id="table4">
-                        <thead>
-                            <tr id="ganttHeader">
-                                <th style="width:250px">班期 / 活動名稱</th>
-                                <!-- JS 生成 1-31 -->
-                            </tr>
-                        </thead>
-                        <!-- 這裡不再只有一個 tbody，而是多個 tbody (依月份) -->
+                        <colgroup>
+                            <col style="width: 300px;">
+                            <script>for(let k=0;k<31;k++)document.write('<col style="width: 28px;">');</script>
+                        </colgroup>
+                        <thead><tr id="ganttHeader"><th>班期 / 活動名稱</th></tr></thead>
                         <tbody id="ganttContainer"></tbody>
                     </table>
                 </div>
@@ -339,7 +187,6 @@
         </div>
     </div>
 
-    <!-- 隱藏的 CSV 檔案輸入框 -->
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
 
     <script>
@@ -348,88 +195,47 @@
         // ==========================================
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxB06TURmbo4QW7ecb5OprxEF3mnJGve_Qkq64qvcyKTS0d4__4kmpzxFvJ9T6Cw0jKuQ/exec"; 
 
-        // 資料變數 (預設第一筆空資料)
         let d1 = [{m:'1', unit:'', name:'', date:'', mp:0, ex:[], isNew:true}];
         let d2 = [{m:'1', unit:'', name:'', date:'', inst:0, ex:[], isNew:true}];
         let d3 = [{unit:'', name:'', date:'', mp:0, ex:[], isNew:true}];
-        
         let currentTab = 1;
-        let printActionType = ''; // 'print' or 'excel'
+        let printActionType = '';
 
-        window.onload = function() {
-            updateToolbar();
-            loadData();
-        };
+        window.onload = function() { updateToolbar(); loadData(); };
 
-        // --- 資料讀取 ---
         function loadData() {
-            if(GAS_API_URL.includes("請貼上")) {
-                renderAll(); return;
-            }
+            if(GAS_API_URL.includes("請貼上")) { renderAll(); return; }
             showLoading(true, "雲端同步中...");
-            fetch(GAS_API_URL)
-            .then(r => r.json())
-            .then(res => {
+            fetch(GAS_API_URL).then(r=>r.json()).then(res => {
                 if(res.status === 'success') {
-                    // Mapping
-                    d1 = (res.d1||[]).map(r => ({
-                        m:r[0], unit:r[1], name:r[2], target:r[3], date:r[4], loc:r[5], batch:r[6], pb:r[7], 
-                        mp:r[12], ext:r[13]==='true', nt:r[14], kl:r[15], ty:r[16], yl:r[17], note:r[18], 
-                        ex:JSON.parse(r[19]||'[]'), isNew:false, dHour:r[9], bHour:r[10]
-                    }));
-                    d2 = (res.d2||[]).map(r => ({
-                        m:r[0], unit:r[1], name:r[2], target:r[3], date:r[4], loc:r[5], batch:r[6], pb:r[7], 
-                        inst:r[12], ext:r[13]==='true', note:r[14], ex:JSON.parse(r[15]||'[]'), isNew:false,
-                        dHour:r[9], bHour:r[10]
-                    }));
-                    d3 = (res.d3||[]).map(r => ({
-                        unit:r[0], name:r[1], target:r[2], date:r[3], days:r[4], hours:r[5], 
-                        mp:r[6], loc:r[7], ex:JSON.parse(r[8]||'[]'), isNew:false
-                    }));
+                    d1 = (res.d1||[]).map(r => ({m:r[0], unit:r[1], name:r[2], target:r[3], date:r[4], loc:r[5], batch:r[6], pb:r[7], mp:r[12], ext:r[13]==='true', nt:r[14], kl:r[15], ty:r[16], yl:r[17], note:r[18], ex:JSON.parse(r[19]||'[]'), isNew:false, dHour:r[9], bHour:r[10]}));
+                    d2 = (res.d2||[]).map(r => ({m:r[0], unit:r[1], name:r[2], target:r[3], date:r[4], loc:r[5], batch:r[6], pb:r[7], inst:r[12], ext:r[13]==='true', note:r[14], ex:JSON.parse(r[15]||'[]'), isNew:false, dHour:r[9], bHour:r[10]}));
+                    d3 = (res.d3||[]).map(r => ({unit:r[0], name:r[1], target:r[2], date:r[3], days:r[4], hours:r[5], mp:r[6], loc:r[7], ex:JSON.parse(r[8]||'[]'), isNew:false}));
                     if(d1.length==0) addRow(1); if(d2.length==0) addRow(2); if(d3.length==0) addRow(3);
                     renderAll();
                 }
-            })
-            .catch(e => alert("連線錯誤: "+e))
-            .finally(() => showLoading(false));
+            }).catch(e=>alert("連線錯誤: "+e)).finally(()=>showLoading(false));
         }
 
-        // --- 資料儲存 ---
         function saveData() {
             if(GAS_API_URL.includes("請貼上")) return alert("請設定 API 網址");
             showLoading(true, "儲存中...");
-            
             const p1 = d1.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.mp, r.ext, r.nt, r.kl, r.ty, r.yl, r.note, JSON.stringify(r.ex)]);
             const p2 = d2.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.inst, r.ext, r.note, JSON.stringify(r.ex)]);
             const p3 = d3.map(r => [r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc, JSON.stringify(r.ex)]);
-
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify({d1:p1, d2:p2, d3:p3}),
-                headers: {'Content-Type': 'text/plain'}
-            })
-            .then(r => r.json())
-            .then(res => {
-                if(res.status==='success') {
-                    alert(res.message);
-                    [d1,d2,d3].forEach(arr => arr.forEach(row => row.isNew = false));
-                    renderAll();
-                } else alert("錯誤: "+res.message);
-            })
-            .finally(() => showLoading(false));
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({d1:p1, d2:p2, d3:p3}), headers: {'Content-Type': 'text/plain'} })
+            .then(r=>r.json()).then(res=>{ if(res.status==='success') { alert(res.message); [d1,d2,d3].forEach(arr=>arr.forEach(r=>r.isNew=false)); renderAll(); } else alert("錯誤: "+res.message); })
+            .finally(()=>showLoading(false));
         }
 
-        // --- UI 切換與工具列 ---
         function switchTab(idx, el) {
             document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
             el.classList.add('active');
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
             document.getElementById(`view${idx}`).classList.add('active');
             currentTab = idx;
-            
             const titles = ["附件1 - 消防人員", "附件2 - 非消防人員", "附件3 - 重大活動", "甘特圖"];
             document.getElementById('pageTitle').innerText = titles[idx-1];
-            
             updateToolbar();
             if(idx===4) renderGantt();
         }
@@ -442,24 +248,22 @@
                 html += `<button class="btn-action btn-import" onclick="document.getElementById('csvInput').click()">📂 匯入 CSV</button>`;
                 html += `<button class="btn-action btn-save" onclick="saveData()">☁️ 儲存資料</button>`;
             } else {
-                html += `<button class="btn-action btn-download" onclick="openPrintModal('excel')">📥 下載 Excel</button>`;
-                html += `<button class="btn-action btn-print" onclick="openPrintModal('print')">🖨️ 列印 PDF</button>`;
+                html += `<button class="btn-action btn-download" onclick="openPrintModal('excel')">📥 下載報表(Excel)</button>`;
+                html += `<button class="btn-action btn-print" onclick="openPrintModal('print')">🖨️ 列印報表(PDF)</button>`;
             }
             bar.innerHTML = html;
         }
 
-        function showLoading(show, txt) {
-            document.getElementById('loading').style.display = show ? 'flex':'none';
-            if(txt) document.getElementById('loadText').innerText = txt;
-        }
+        function showLoading(s,t){ document.getElementById('loading').style.display=s?'flex':'none'; if(t)document.getElementById('loadText').innerText=t; }
 
-        // --- Render 列表 (附件1~3) ---
-        function renderAll() { renderT1(); renderT2(); renderT3(); }
+        // --- Renders (Expanded for Readability) ---
+        function renderAll(){ renderT1(); renderT2(); renderT3(); }
 
         function renderT1() {
             const tb = document.getElementById('tbody1'); tb.innerHTML = '';
             d1.forEach((r, i) => {
-                tb.innerHTML += `<tr>
+                tb.innerHTML += `
+                <tr>
                     <td style="text-align:center"><button class="del-btn" onclick="delRow(1,${i})" style="border:none;background:none;color:#94a3b8;cursor:pointer;">✕</button></td>
                     <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.m||''}" onchange="d1[${i}].m=this.value"></td>
@@ -471,23 +275,25 @@
                     <td><input type="number" value="${r.batch||''}" onchange="d1[${i}].batch=this.value"></td>
                     <td><input type="number" value="${r.pb||''}" onchange="d1[${i}].pb=this.value"></td>
                     <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.pb)||0}</td>
-                    <td><input type="number" value="${r.dHour||''}" onchange="d1[${i}].dHour=this.value"></td>
-                    <td><input type="number" value="${r.bHour||''}" onchange="d1[${i}].bHour=this.value"></td>
-                    <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.bHour)||0}</td>
-                    <td class="col-blue-light"><input type="number" value="${r.mp||''}" onchange="d1[${i}].mp=this.value" class="text-manpower"></td>
-                    <td class="td-checkbox"><input type="checkbox" class="excel-checkbox" ${r.ext?'checked':''} onchange="d1[${i}].ext=this.checked"></td>
-                    <td><input type="number" value="${r.nt||''}" onchange="d1[${i}].nt=this.value"></td>
-                    <td><input type="number" value="${r.kl||''}" onchange="d1[${i}].kl=this.value"></td>
-                    <td><input type="number" value="${r.ty||''}" onchange="d1[${i}].ty=this.value"></td>
-                    <td><input type="number" value="${r.yl||''}" onchange="d1[${i}].yl=this.value"></td>
+                    <td><input type="number" value="${r.dh||''}" onchange="d1[${i}].dh=this.value"></td>
+                    <td><input type="number" value="${r.bh||''}" onchange="d1[${i}].bh=this.value"></td>
+                    <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.bh)||0}</td>
+                    <td class="bg-b"><input type="number" value="${r.mp||''}" onchange="d1[${i}].mp=this.value" style="color:#1e40af;font-weight:bold"></td>
+                    <td class="bg-y chk-cell"><input type="checkbox" class="ex-chk" ${r.ext?'checked':''} onchange="d1[${i}].ext=this.checked"></td>
+                    <td class="bg-y"><input type="number" value="${r.nt||''}" onchange="d1[${i}].nt=this.value"></td>
+                    <td class="bg-y"><input type="number" value="${r.kl||''}" onchange="d1[${i}].kl=this.value"></td>
+                    <td class="bg-y"><input type="number" value="${r.ty||''}" onchange="d1[${i}].ty=this.value"></td>
+                    <td class="bg-y"><input type="number" value="${r.yl||''}" onchange="d1[${i}].yl=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.note||''}" onchange="d1[${i}].note=this.value"></td>
                 </tr>`;
             });
         }
+
         function renderT2() {
             const tb = document.getElementById('tbody2'); tb.innerHTML = '';
             d2.forEach((r, i) => {
-                tb.innerHTML += `<tr>
+                tb.innerHTML += `
+                <tr>
                     <td style="text-align:center"><button class="del-btn" onclick="delRow(2,${i})" style="border:none;background:none;color:#94a3b8;cursor:pointer;">✕</button></td>
                     <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.m||''}" onchange="d2[${i}].m=this.value"></td>
@@ -499,350 +305,246 @@
                     <td><input type="number" value="${r.batch||''}" onchange="d2[${i}].batch=this.value"></td>
                     <td><input type="number" value="${r.pb||''}" onchange="d2[${i}].pb=this.value"></td>
                     <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.pb)||0}</td>
-                    <td><input type="number" value="${r.dHour||''}" onchange="d2[${i}].dHour=this.value"></td>
-                    <td><input type="number" value="${r.bHour||''}" onchange="d2[${i}].bHour=this.value"></td>
-                    <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.bHour)||0}</td>
+                    <td><input type="number" value="${r.dh||''}" onchange="d2[${i}].dh=this.value"></td>
+                    <td><input type="number" value="${r.bh||''}" onchange="d2[${i}].bh=this.value"></td>
+                    <td style="background:#f1f5f9;text-align:center;line-height:36px">${(r.batch*r.bh)||0}</td>
                     <td><input type="number" value="${r.inst||''}" onchange="d2[${i}].inst=this.value"></td>
-                    <td class="td-checkbox"><input type="checkbox" class="excel-checkbox" ${r.ext?'checked':''} onchange="d2[${i}].ext=this.checked"></td>
+                    <td class="chk-cell"><input type="checkbox" class="ex-chk" ${r.ext?'checked':''} onchange="d2[${i}].ext=this.checked"></td>
                     <td class="align-left"><input type="text" value="${r.note||''}" onchange="d2[${i}].note=this.value"></td>
                 </tr>`;
             });
         }
+
         function renderT3() {
             const tb = document.getElementById('tbody3'); tb.innerHTML = '';
             d3.forEach((r, i) => {
-                tb.innerHTML += `<tr>
+                tb.innerHTML += `
+                <tr>
                     <td style="text-align:center"><button class="del-btn" onclick="delRow(3,${i})" style="border:none;background:none;color:#94a3b8;cursor:pointer;">✕</button></td>
                     <td><input type="text" value="${i+1}" readonly style="color:#999"></td>
                     <td><input type="text" value="${r.unit||''}" onchange="d3[${i}].unit=this.value"></td>
                     <td class="align-left"><input type="text" value="${r.name||''}" onchange="d3[${i}].name=this.value"></td>
                     <td><input type="text" value="${r.target||''}" onchange="d3[${i}].target=this.value"></td>
-                    <td><div class="date-cell"><input type="text" value="${r.date||''}" onchange="d3[${i}].date=this.value"><button class="btn-calendar" onclick="openDateModal(3,${i})">📅</button></div></td>
+                    <td><div class="date-box"><input type="text" value="${r.date||''}" onchange="d3[${i}].date=this.value"><button class="btn-cal" onclick="openDateModal(3,${i})">📅</button></div></td>
                     <td><input type="number" value="${r.days||''}" onchange="d3[${i}].days=this.value"></td>
                     <td><input type="number" value="${r.hours||''}" onchange="d3[${i}].hours=this.value"></td>
-                    <td class="col-red-light"><input type="number" value="${r.mp||''}" onchange="d3[${i}].mp=this.value" class="text-danger"></td>
+                    <td class="bg-r"><input type="number" value="${r.mp||''}" onchange="d3[${i}].mp=this.value" style="color:#b91c1c;font-weight:bold"></td>
                     <td class="align-left"><input type="text" value="${r.loc||''}" onchange="d3[${i}].loc=this.value"></td>
                 </tr>`;
             });
         }
 
-        // --- 甘特圖 Logic (多 tbody) ---
+        // --- Gantt ---
         function renderGantt() {
-            // Header 1-31
             const h = document.getElementById('ganttHeader');
-            h.innerHTML = '<th style="width:250px">班期 / 活動名稱</th>';
-            for(let i=1; i<=31; i++) h.innerHTML += `<th style="width:30px;font-size:11px;color:#64748b;">${i}</th>`;
-
+            h.innerHTML = '<th>班期 / 活動名稱</th>';
+            for(let i=1; i<=31; i++) h.innerHTML += `<th>${i}</th>`;
             const container = document.getElementById('ganttContainer');
-            container.innerHTML = ''; // 清空
+            container.innerHTML = '';
 
-            // 1. 收集資料
             let rows = [];
             const parse = (r) => parseDates(r.date, r.ex);
             d1.forEach(r => { if(r.date && r.mp) rows.push({m:r.m||'1', n:r.name, ds:parse(r), v:r.mp}) });
             d2.forEach(r => { if(r.date && r.inst) rows.push({m:r.m||'1', n:r.name, ds:parse(r), v:r.inst}) });
             d3.forEach(r => { if(r.date && r.mp) { let m=r.date.match(/^(\d+)/); rows.push({m:m?m[1]:'1', n:r.name, ds:parse(r), v:r.mp}); } });
 
-            // 2. 分組
             let grp = {};
             for(let i=1; i<=12; i++) grp[i]=[];
             rows.forEach(r => { if(grp[r.m]) grp[r.m].push(r); });
 
-            // 3. 渲染 (每個月份一個 tbody)
             for(let m=1; m<=12; m++) {
                 if(grp[m].length === 0) continue;
-
                 let tbody = document.createElement('tbody');
                 tbody.className = 'gantt-month-group';
-                tbody.id = `month-${m}`; // 為了列印篩選用
+                tbody.id = `month-${m}`;
 
-                // 月份標題
                 let html = `<tr class="gantt-month-header"><td colspan="32">${m} 月份</td></tr>`;
-                let sums = Array(32).fill(0);
+                let sum = Array(32).fill(0);
 
                 grp[m].forEach(r => {
-                    // 上列 (Visual)
-                    html += `<tr class="gantt-visual-row"><td style="border-right:1px solid #64748b; border-bottom:none;"></td>`;
-                    // 下列 (Data)
-                    let dataRow = `<tr class="gantt-data-row"><td class="align-left" style="padding-left:10px; font-size:12px; border-top:none;">${r.n}</td>`;
-
+                    // 強制對齊的 CSS class: gantt-name-cell
+                    let vis = `<tr class="gantt-visual-row"><td style="border-right:1px solid #64748b;border-bottom:none;"></td>`;
+                    let dat = `<tr class="gantt-data-row"><td class="gantt-name-cell" title="${r.n}">${r.n}</td>`;
                     for(let i=1; i<=31; i++) {
-                        let active = r.ds.includes(i);
-                        if(active) sums[i] += parseInt(r.v);
-                        
-                        html += `<td class="gantt-cell-bar ${active?'bar-active':''}"></td>`;
-                        dataRow += `<td class="gantt-num">${active ? `<input type="text" value="${r.v}" readonly>` : ''}</td>`;
+                        let act = r.ds.includes(i);
+                        if(act) sum[i] += parseInt(r.v);
+                        vis += `<td class="gantt-cell-bar ${act?'bar-active':''}"></td>`;
+                        dat += `<td class="gantt-num">${act?`<input type="text" value="${r.v}" readonly>`:''}</td>`;
                     }
-                    html += `</tr>${dataRow}</tr>`;
+                    html += vis + '</tr>' + dat + '</tr>';
                 });
 
-                // 統計列 (即使是 0 也要顯示)
-                let statRow = `<tr class="stats-row"><td>每日統計</td>`;
-                for(let i=1; i<=31; i++) {
-                    statRow += `<td>${sums[i]}</td>`; // 修改: 顯示0
-                }
-                statRow += `</tr>`;
-                html += statRow;
-
+                let sRow = `<tr class="stats-row"><td>每日統計</td>`;
+                for(let i=1; i<=31; i++) sRow += `<td>${sum[i]}</td>`;
+                html += sRow + '</tr>';
                 tbody.innerHTML = html;
                 container.appendChild(tbody);
             }
         }
 
-        // --- 日期解析 ---
-        function parseDates(str, excludeList) {
-            let days = [];
-            if(!str) return days;
+        function parseDates(str, ex) {
+            let days=[]; if(!str) return days;
             try {
-                let s = str.replace(/\(.*\)/g,'').trim();
-                let rng = s.match(/(\d+)\/(\d+)-(\d+)/), sgl = s.match(/(\d+)\/(\d+)/);
-                let temp = [];
-                if(rng) for(let i=+rng[2]; i<=+rng[3]; i++) temp.push(i);
+                let s=str.replace(/\(.*\)/g,'').trim();
+                let rng=s.match(/(\d+)\/(\d+)-(\d+)/), sgl=s.match(/(\d+)\/(\d+)/);
+                let temp=[];
+                if(rng) for(let i=+rng[2];i<=+rng[3];i++) temp.push(i);
                 else if(sgl) temp.push(+sgl[2]);
-                else if(s.includes(',')) s.split(',').forEach(p=>{let m=p.match(/\d+$/); if(m) temp.push(+m[0])});
-                
-                days = temp.filter(d => !(excludeList||[]).includes(d));
+                else if(s.includes(',')) s.split(',').forEach(p=>{let m=p.match(/\d+$/);if(m)temp.push(+m[0])});
+                days = temp.filter(d => !(ex||[]).includes(d));
             } catch(e){}
             return days;
         }
 
-        // --- Modal: 日期設定 ---
+        // --- Modal ---
         let curEdit = null;
         function openDateModal(t, i) {
             curEdit = {t, i};
             let r = (t==1?d1:t==2?d2:d3)[i];
-            // 先算不排除的日期
             let rawDays = parseDates(r.date, []); 
-            if(rawDays.length === 0) return alert("請先輸入有效日期 (如 1/6-19)");
-            
-            document.getElementById('modalRangeText').innerText = `目前範圍：${rawDays.join(', ')} (共 ${rawDays.length} 天)`;
+            if(rawDays.length==0) return alert('請先輸入正確日期');
+            document.getElementById('modalRangeText').innerText = `目前範圍: ${rawDays.join(', ')} (共${rawDays.length}天)`;
             let grid = document.getElementById('calendarGrid'); grid.innerHTML='';
-            
-            // 1-31 Buttons
             for(let d=1; d<=31; d++) {
-                let btn = document.createElement('div');
-                btn.className = 'day-btn'; btn.innerText = d;
-                
+                let btn = document.createElement('div'); btn.className='day-btn'; btn.innerText=d;
                 if(rawDays.includes(d)) {
                     btn.classList.add('active');
                     if((r.ex||[]).includes(d)) btn.classList.add('excluded');
                     btn.onclick = () => btn.classList.toggle('excluded');
-                } else {
-                    btn.classList.add('disabled');
-                }
+                } else btn.classList.add('disabled');
                 grid.appendChild(btn);
             }
-            document.getElementById('dateModal').style.display = 'flex';
+            document.getElementById('dateModal').style.display='flex';
+        }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        
+        function saveDateModal() {
+            let ex = Array.from(document.querySelectorAll('#calendarGrid .day-btn.active.excluded')).map(b=>parseInt(b.innerText));
+            (curEdit.t==1?d1:curEdit.t==2?d2:d3)[curEdit.i].ex = ex;
+            closeModal('dateModal'); renderAll();
         }
 
         function applyDateFilter(type) {
-            // 這裡需要知道「當前編輯的是幾月」才能算六日
-            let row = (curEdit.t==1?d1:curEdit.t==2?d2:d3)[curEdit.i];
-            let m = row.m ? parseInt(row.m) : (row.date.match(/^(\d+)/) ? parseInt(row.date.match(/^(\d+)/)[1]) : 1);
-            
-            let btns = document.querySelectorAll('#calendarGrid .day-btn.active');
-            btns.forEach(b => {
-                let d = parseInt(b.innerText);
-                let dt = new Date(2025, m-1, d);
-                let w = dt.getDay(); // 0=Sun, 6=Sat
-                
-                if(type==='all') b.classList.remove('excluded');
-                if(type==='clear') b.classList.add('excluded');
-                if(type==='no-weekend') {
-                    if(w===0 || w===6) b.classList.add('excluded'); else b.classList.remove('excluded');
-                }
-                if(type==='only-weekend') {
-                    if(w===0 || w===6) b.classList.remove('excluded'); else b.classList.add('excluded');
-                }
+            let row=(curEdit.t==1?d1:curEdit.t==2?d2:d3)[curEdit.i];
+            let m=row.m?parseInt(row.m):1;
+            document.querySelectorAll('#calendarGrid .day-btn.active').forEach(b=>{
+                let d=parseInt(b.innerText), dt=new Date(2025, m-1, d), w=dt.getDay();
+                if(type=='all') b.classList.remove('excluded');
+                if(type=='clear') b.classList.add('excluded');
+                if(type=='no-weekend') { if(w==0||w==6) b.classList.add('excluded'); else b.classList.remove('excluded'); }
+                if(type=='only-weekend') { if(w==0||w==6) b.classList.remove('excluded'); else b.classList.add('excluded'); }
             });
         }
 
-        function saveDateModal() {
-            let exs = Array.from(document.querySelectorAll('#calendarGrid .day-btn.active.excluded')).map(b=>parseInt(b.innerText));
-            (curEdit.t==1?d1:curEdit.t==2?d2:d3)[curEdit.i].ex = exs;
-            closeModal('dateModal');
-            renderAll();
-        }
-
-        // --- Modal: 列印篩選 ---
-        function openPrintModal(action) {
-            printActionType = action;
-            const grid = document.getElementById('printMonthGrid'); grid.innerHTML = '';
-            for(let m=1; m<=12; m++) {
-                let btn = document.createElement('div');
-                btn.className = 'month-select-btn selected'; // 預設全選
-                btn.innerText = `${m} 月`;
-                btn.dataset.m = m;
-                btn.onclick = () => btn.classList.toggle('selected');
+        // --- Print Modal ---
+        function openPrintModal(act) {
+            printActionType=act;
+            const grid=document.getElementById('printMonthGrid'); grid.innerHTML='';
+            for(let m=1;m<=12;m++){
+                let btn=document.createElement('div'); btn.className='month-select-btn selected';
+                btn.innerText=`${m} 月`; btn.dataset.m=m;
+                btn.onclick=()=>btn.classList.toggle('selected');
                 grid.appendChild(btn);
             }
-            document.getElementById('printModal').style.display = 'flex';
+            document.getElementById('printModal').style.display='flex';
         }
-
-        function toggleAllMonths() {
-            let all = document.querySelectorAll('.month-select-btn');
-            let hasUnselected = Array.from(all).some(b => !b.classList.contains('selected'));
-            all.forEach(b => hasUnselected ? b.classList.add('selected') : b.classList.remove('selected'));
+        function toggleAllMonths(){
+            let all=document.querySelectorAll('.month-select-btn');
+            let hasUn=Array.from(all).some(b=>!b.classList.contains('selected'));
+            all.forEach(b=>hasUn?b.classList.add('selected'):b.classList.remove('selected'));
         }
-
         function executePrintOrExport() {
-            // 1. 取得選取的月份
-            let selected = Array.from(document.querySelectorAll('.month-select-btn.selected')).map(b => b.dataset.m);
+            let selected=Array.from(document.querySelectorAll('.month-select-btn.selected')).map(b=>b.dataset.m);
             closeModal('printModal');
-
-            // 2. 隱藏未選取的月份 (DOM 操作)
-            for(let m=1; m<=12; m++) {
-                let tb = document.getElementById(`month-${m}`);
-                if(tb) tb.style.display = selected.includes(String(m)) ? 'table-header-group' : 'none';
-            }
-
-            // 3. 執行動作
-            if(printActionType === 'print') {
-                setTimeout(() => {
-                    window.print();
-                    // 恢復顯示
-                    for(let m=1; m<=12; m++) {
-                        let tb = document.getElementById(`month-${m}`);
-                        if(tb) tb.style.display = 'table-header-group';
-                    }
-                }, 500);
-            } else {
-                exportExcel(selected);
-                // 恢復顯示
-                for(let m=1; m<=12; m++) {
-                    let tb = document.getElementById(`month-${m}`);
-                    if(tb) tb.style.display = 'table-header-group';
-                }
-            }
-        }
-
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // --- CSV Functions ---
-        function downloadCSVTemplate() {
-            let csvContent = "\uFEFF"; // BOM
-            if(currentTab==1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供宜基北桃參訓,新北,基隆,桃園,宜蘭,備註\n";
-            if(currentTab==2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,訓練地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市,備註\n";
-            if(currentTab==3) csvContent += "承辦單位,重大活動演習名稱,參加對象,日期,天數,時數,每日調用外勤人數,地點\n";
+            for(let m=1;m<=12;m++){ let tb=document.getElementById(`month-${m}`); if(tb) tb.style.display=selected.includes(String(m))?'table-header-group':'none'; }
             
-            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            saveAs(blob, `附件${currentTab}_匯入範本.csv`);
+            if(printActionType==='print') {
+                setTimeout(()=>{ window.print(); for(let m=1;m<=12;m++){let tb=document.getElementById(`month-${m}`);if(tb)tb.style.display='table-header-group';} }, 500);
+            } else {
+                exportExcelJS(selected);
+                for(let m=1;m<=12;m++){let tb=document.getElementById(`month-${m}`);if(tb)tb.style.display='table-header-group';}
+            }
         }
 
-        function processCSV(input) {
-            const file = input.files[0];
-            if(!file) return;
-            Papa.parse(file, {
-                complete: function(res) {
-                    let rows = res.data;
-                    if(rows.length < 2) return alert("CSV 無資料");
-                    let target = currentTab==1?d1:currentTab==2?d2:d3;
-                    
-                    // Skip header, append data
-                    rows.forEach((r, i) => {
-                        if(i===0) return;
-                        if(r.length < 3) return; // Empty line
-                        let newObj = {isNew:true, ex:[]};
-                        if(currentTab==1) {
-                            newObj.m=r[0]; newObj.unit=r[1]; newObj.name=r[2]; newObj.target=r[3]; newObj.date=r[4];
-                            newObj.loc=r[5]; newObj.batch=r[6]; newObj.pb=r[7]; newObj.dHour=r[8]; newObj.bHour=r[9];
-                            newObj.mp=r[10]; newObj.ext=(r[11]=='是'); newObj.nt=r[12]; newObj.kl=r[13]; newObj.ty=r[14]; newObj.yl=r[15]; newObj.note=r[16];
-                        } else if(currentTab==2) {
-                            newObj.m=r[0]; newObj.unit=r[1]; newObj.name=r[2]; newObj.target=r[3]; newObj.date=r[4];
-                            newObj.loc=r[5]; newObj.batch=r[6]; newObj.pb=r[7]; newObj.dHour=r[8]; newObj.bHour=r[9];
-                            newObj.inst=r[10]; newObj.ext=(r[11]=='是'); newObj.note=r[12];
-                        } else {
-                            newObj.unit=r[0]; newObj.name=r[1]; newObj.target=r[2]; newObj.date=r[3];
-                            newObj.days=r[4]; newObj.hours=r[5]; newObj.mp=r[6]; newObj.loc=r[7];
-                        }
-                        target.push(newObj);
-                    });
-                    renderAll();
-                    alert(`匯入 ${rows.length-1} 筆資料成功！`);
-                }
-            });
-            input.value = '';
-        }
-
-        // --- 通用操作 ---
+        // --- CRUD ---
         function delRow(t, i) {
             let arr = t==1?d1:t==2?d2:d3;
-            if(arr[i].isNew) {
-                arr.splice(i, 1); renderAll();
-            } else {
-                let p = prompt("刪除舊資料請輸入密碼 (119):");
-                if(p==="119") { arr.splice(i, 1); renderAll(); }
-            }
+            if(arr[i].isNew) { arr.splice(i, 1); renderAll(); } 
+            else { if(prompt("輸入密碼 (119) 刪除:")==="119") { arr.splice(i, 1); renderAll(); } }
         }
         function addRow(t) {
             let o = {isNew:true, ex:[], date:''};
-            if(t==1) d1.push(o); if(t==2) d2.push(o); if(t==3) d3.push(o);
+            if(t==1) d1.push({...o, m:'', mp:0}); if(t==2) d2.push({...o, m:'', inst:0}); if(t==3) d3.push({...o, unit:'', mp:0});
             renderAll();
         }
 
-        // --- ExcelJS 匯出 (支援甘特圖篩選) ---
-        async function exportExcel(selectedMonths) {
-            const wb = new ExcelJS.Workbook();
-            const ganttSheet = wb.addWorksheet('甘特圖');
-            
-            // Header 1-31
-            const headerRow = ["月份", "班期 / 活動名稱", ...Array.from({length:31},(_,k)=>k+1)];
-            const r1 = ganttSheet.addRow(headerRow);
-            r1.font = { bold: true };
-            r1.eachCell(c => { c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'E2E8F0'}}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; });
+        // --- CSV ---
+        function downloadCSVTemplate() {
+            let c="\uFEFF";
+            if(currentTab==1) c+="月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供宜基北桃參訓,新北,基隆,桃園,宜蘭,備註\n";
+            if(currentTab==2) c+="月份,承辦單位,課程名稱,訓練對象,課程日期,訓練地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市,備註\n";
+            if(currentTab==3) c+="承辦單位,重大活動演習名稱,參加對象,日期,天數,時數,每日調用外勤人數,地點\n";
+            saveAs(new Blob([c],{type:'text/csv;charset=utf-8;'}), `範本_附件${currentTab}.csv`);
+        }
+        function processCSV(inp) {
+            if(!inp.files[0]) return;
+            Papa.parse(inp.files[0], {complete:function(res){
+                if(res.data.length<2) return alert("無資料");
+                let t=currentTab==1?d1:currentTab==2?d2:d3;
+                res.data.forEach((r,i)=>{
+                    if(i==0||r.length<3)return;
+                    let o={isNew:true,ex:[]};
+                    if(currentTab==1){o.m=r[0];o.unit=r[1];o.name=r[2];o.target=r[3];o.date=r[4];o.loc=r[5];o.batch=r[6];o.pb=r[7];o.dh=r[8];o.bh=r[9];o.mp=r[10];o.ext=(r[11]=='是');o.nt=r[12];o.kl=r[13];o.ty=r[14];o.yl=r[15];o.note=r[16];}
+                    else if(currentTab==2){o.m=r[0];o.unit=r[1];o.name=r[2];o.target=r[3];o.date=r[4];o.loc=r[5];o.batch=r[6];o.pb=r[7];o.dh=r[8];o.bh=r[9];o.inst=r[10];o.ext=(r[11]=='是');o.note=r[12];}
+                    else {o.unit=r[0];o.name=r[1];o.target=r[2];o.date=r[3];o.days=r[4];o.hours=r[5];o.mp=r[6];o.loc=r[7];}
+                    t.push(o);
+                });
+                renderAll(); alert("匯入完成，請按儲存");
+            }});
+            inp.value='';
+        }
 
-            // Filter Data
-            // Reuse render logic to get grouped data
+        async function exportExcelJS(selM) {
+            const wb = new ExcelJS.Workbook();
+            const sh = wb.addWorksheet('甘特圖');
+            const hSty = (c) => { c.font={bold:true}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'E2E8F0'}}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; };
+            
+            sh.addRow(["月份", "班期 / 活動名稱", ...Array.from({length:31},(_,k)=>k+1)]).eachCell(c=>hSty(c));
+            sh.getColumn(1).width=10; sh.getColumn(2).width=40;
+
             let rows=[];
             const parse = (r) => parseDates(r.date, r.ex);
             d1.forEach(r=>{if(r.date&&r.mp)rows.push({m:r.m||'1',n:r.name,ds:parse(r),v:r.mp})});
             d2.forEach(r=>{if(r.date&&r.inst)rows.push({m:r.m||'1',n:r.name,ds:parse(r),v:r.inst})});
             d3.forEach(r=>{if(r.date&&r.mp){let m=r.date.match(/^(\d+)/);rows.push({m:m?m[1]:'1',n:r.name,ds:parse(r),v:r.mp})}});
-            
-            let grp={}; for(let i=1;i<=12;i++)grp[i]=[];
+            let grp={}; for(let i=1;i<=12;i++) grp[i]=[];
             rows.forEach(r=>{if(grp[r.m])grp[r.m].push(r)});
 
-            // Generate Rows
-            selectedMonths.forEach(m => {
+            selM.forEach(m => {
                 if(grp[m].length===0) return;
-                ganttSheet.addRow([`${m} 月份`]).font = {bold:true};
-                let sum = Array(32).fill(0);
-                
+                sh.addRow([`${m} 月份`]).font={bold:true,size:12};
+                let sum=Array(32).fill(0);
                 grp[m].forEach(r => {
-                    let rowData = ["", r.n];
-                    for(let i=1; i<=31; i++) {
-                        if(r.ds.includes(i)) {
-                            rowData.push(parseInt(r.v));
-                            sum[i]+=parseInt(r.v);
-                        } else rowData.push("");
+                    let d=["", r.n];
+                    for(let i=1;i<=31;i++) {
+                        if(r.ds.includes(i)){ d.push(parseInt(r.v)); sum[i]+=parseInt(r.v); } else d.push("");
                     }
-                    let excelRow = ganttSheet.addRow(rowData);
-                    // Set styles
-                    excelRow.eachCell((cell, colNumber) => {
-                        if(colNumber > 2 && cell.value !== "") {
-                            cell.fill = {type:'pattern',pattern:'solid',fgColor:{argb:'3B82F6'}}; // Blue
-                            cell.font = {color:{argb:'FFFFFF'}, bold:true};
-                        }
-                        cell.border = {top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+                    let rw=sh.addRow(d);
+                    rw.eachCell((c,idx)=>{
+                        c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+                        if(idx>2 && c.value!=="") { c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'3B82F6'}}; c.font={color:{argb:'FFFFFF'},bold:true}; }
                     });
                 });
-
-                // Stat Row
-                let statData = ["", "每日統計"];
-                for(let i=1; i<=31; i++) statData.push(sum[i]);
-                let sRow = ganttSheet.addRow(statData);
-                sRow.eachCell(c => {
-                    c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'F1F5F9'}};
-                    c.font={bold:true, color:{argb:'1E40AF'}};
-                    c.border={top:{style:'double'},bottom:{style:'thick'},left:{style:'thin'},right:{style:'thin'}};
-                });
+                let sd=["", "每日統計"];
+                for(let i=1;i<=31;i++) sd.push(sum[i]);
+                let sr=sh.addRow(sd);
+                sr.eachCell(c=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'F1F5F9'}}; c.font={bold:true,color:{argb:'1E40AF'}}; c.border={top:{style:'double'},bottom:{style:'thick'},left:{style:'thin'},right:{style:'thin'}}; });
+                sh.addRow([]);
             });
-
-            // Download
-            const buf = await wb.xlsx.writeBuffer();
+            
+            const buf=await wb.xlsx.writeBuffer();
             saveAs(new Blob([buf]), "甘特圖報表.xlsx");
         }
-
     </script>
 </body>
 </html>
