@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>訓練流路管理系統 (最終修正版)</title>
+    <title>訓練流路管理系統 (完整單一檔版)</title>
 
     <!-- 核心工具庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -18,7 +18,7 @@
 
     <script>
         // ==========================================
-        // ⚠️ 1. 系統連結
+        // ⚠️ 1. 系統連結 (Google Apps Script URL)
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
 
         // ⚠️ 2. 系統整合連結
@@ -32,47 +32,64 @@
 
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
         .table-container { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
+        
+        /* 表格樣式優化 */
         table { border-collapse: collapse; font-size: 13px; table-layout: fixed; width: auto; border-spacing: 0; }
         #table1 { min-width: 2000px; }
         #table2 { min-width: 1800px; }
-        td { border: 1px solid #cbd5e1; height: auto; min-height: 38px; background: white; padding: 0; vertical-align: middle; }
+        td, th { border: 1px solid #cbd5e1; height: auto; min-height: 38px; padding: 0; vertical-align: middle; }
+        th { background: #f8fafc; color: #475569; font-weight: 600; padding: 8px 4px; text-align: center; }
+        
+        /* 輸入框樣式 */
         input[type="text"], input[type="number"] { width: 100%; height: 38px; border: none; outline: none; background: transparent; text-align: center; font-family: inherit; font-size: 13px; display: block; color: #334155; }
         input:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
         textarea { width: 100%; min-height: 38px; height: 100%; border: none; resize: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; text-align: left; padding: 8px; box-sizing: border-box; line-height: 1.4; }
         textarea:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
 
-        /* 甘特圖 CSS */
+        /* 甘特圖專用 CSS */
         #table4 { width: 1232px !important; min-width: 1232px !important; max-width: 1232px !important; table-layout: fixed !important; border-collapse: collapse; margin: 0; }
         .col-fix-name { width: 300px !important; min-width: 300px !important; max-width: 300px !important; white-space: normal; word-break: break-all; line-height: 1.3; padding: 5px; border: 1px solid #000 !important; vertical-align: middle !important; background: #fff; box-sizing: border-box; }
         .col-fix-day { width: 30px !important; min-width: 30px !important; max-width: 30px !important; text-align: center; padding: 0 !important; border: 1px solid #000 !important; box-sizing: border-box; }
         .gantt-visual-row, .gantt-data-row { height: 28px; line-height: 28px; }
         .gantt-cell-bar { border-bottom: none; height: 28px; }
-        .gantt-num { border-top: none; font-weight: bold; color: #000; font-size: 12px; height: 28px; line-height: 28px; }
+        .gantt-num { border-top: none; font-weight: bold; color: #000; font-size: 10px; height: 28px; line-height: 28px; text-align: center; }
         .weekend { background-color: #f3f4f6; }
         .holiday-red { background-color: #fee2e2; }
         .bar-active { background-color: #3b82f6 !important; border-color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         tbody.gantt-month-group { break-inside: avoid; page-break-inside: avoid; border-bottom: 2px solid #000; }
         .gantt-month-header td { background: #e2e8f0; font-weight: bold; padding-left: 15px; border: 1px solid #000; font-size: 14px; height: 32px; }
-        .stats-row td { background-color: #f8fafc; border: 1px solid #000; color: #1e40af; font-weight: bold; text-align: center; }
+        .stats-row td { background-color: #f8fafc; border: 1px solid #000; color: #1e40af; font-weight: bold; text-align: center; font-size: 11px; }
 
-        .date-cell { display: flex; align-items: center; height: 100%; }
-        .date-cell input { flex: 1; }
-        .btn-calendar { width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; }
+        /* 日期選擇器按鈕 */
+        .date-cell { display: flex; align-items: center; height: 100%; width: 100%; position: relative; }
+        .date-cell input { flex: 1; min-width: 0; }
+        .btn-calendar { width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-calendar:hover { background: #e2e8f0; color: #2563eb; }
+
+        /* 特殊欄位底色 */
         .col-yellow { background: #ffffcc !important; }
         .col-blue-light { background: #e0f2fe !important; }
         .col-red-light { background: #fee2e2 !important; }
 
-        /* Modal */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
-        .day-btn { padding: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 6px; font-size: 14px; }
-        .day-btn.active { background: #dbeafe; color: #1e40af; font-weight: bold; border-color: #3b82f6; }
-        .print-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        .month-select-btn { padding: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        .month-select-btn.selected { background: #3b82f6; color: white; border-color: #2563eb; }
-
+        /* Modal 樣式 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0; }
+        .day-btn { 
+            padding: 8px 4px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; 
+            border-radius: 6px; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 48px; position: relative;
+        }
+        .day-btn:hover { border-color: #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .day-btn.excluded { background: #f1f5f9; color: #cbd5e1; text-decoration: line-through; border-color: #f1f5f9; }
+        .day-btn.holiday { color: #ef4444; background: #fef2f2; border-color: #fee2e2; }
+        .day-btn.holiday.excluded { background: #fef2f2; color: #fca5a5; border-color: #fee2e2; }
+        .dot-indicator { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; margin-top: 2px; }
+        
+        /* 讀取遮罩 */
         #loading { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; font-size: 16px; backdrop-filter: blur(4px); }
         .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 隱藏滾動條但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { height: 0px; background: transparent; }
 
         @media print {
             @page { size: A3 landscape; margin: 5mm; }
@@ -82,12 +99,21 @@
             .view-section { display: none; }
             .view-section.active { display: block; }
             #table4 { width: 1232px !important; min-width: 1232px !important; table-layout: fixed !important; }
-            .col-fix-name { width: 300px !important; }
-            .col-fix-day { width: 30px !important; padding: 0 !important; }
-            table, th, td { border: 1px solid #000 !important; }
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "papaparse": "https://aistudiocdn.com/papaparse@^5.5.3"
+  }
+}
+</script>
 </head>
 
 <body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex selection:bg-blue-500 selection:text-white">
@@ -97,33 +123,38 @@
         <div id="loadText">處理中...</div>
     </div>
 
-    <!-- Modal 區域 -->
+    <!-- Modal: 日期排除 -->
     <div id="dateModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
-        <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
-            <h3 class="font-bold text-lg mb-2 text-slate-800">排除日期</h3>
-            <div id="modalRangeText" class="text-sm text-blue-600 mb-3 font-mono"></div>
-            <div class="flex flex-wrap gap-2 mb-4">
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('all')">全選</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('no-weekend')">排除六日</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('only-weekend')">僅選六日</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100 text-red-500 border-red-200" onclick="applyDateFilter('clear')">清除</button>
+        <div class="bg-white w-[95%] max-w-[500px] rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+                 <div>
+                    <h3 class="font-bold text-lg text-slate-800">排除日期設定</h3>
+                    <p class="text-xs text-blue-600 font-mono mt-1" id="modalYearDisplay"></p>
+                 </div>
+                 <button onclick="closeModal('dateModal')" class="p-2 hover:bg-slate-200 rounded-full transition text-slate-500"><i class="ri-close-line text-xl"></i></button>
             </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold" onclick="closeModal('dateModal')">取消</button>
-                <button class="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold shadow-lg" onclick="saveDateModal()">確定</button>
-            </div>
-        </div>
-    </div>
+    
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div class="mb-4 text-sm text-slate-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p>點選下方按鈕來 <span class="text-slate-400 line-through font-bold">排除</span> 或 <span class="text-green-600 font-bold">保留</span> 該日期。</p>
+                    <p class="mt-1 text-xs text-slate-400">* 按下確定後，日期將自動鎖定於該年度 (例如 114/1/5)。</p>
+                </div>
+    
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded hover:bg-slate-100 text-slate-700" onclick="applyDateFilter('all')">全選(排除)</button>
+                    <button class="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded hover:bg-slate-100 text-slate-700" onclick="applyDateFilter('no-weekend')">排除六日/假</button>
+                    <button class="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded hover:bg-slate-100 text-slate-700" onclick="applyDateFilter('only-weekend')">僅選六日/假</button>
+                    <button class="px-3 py-1.5 text-xs font-bold border border-red-200 rounded hover:bg-red-50 text-red-500" onclick="applyDateFilter('clear')">清除設定</button>
+                </div>
 
-    <div id="printModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
-        <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
-            <h3 class="font-bold text-lg mb-2 text-slate-800">請選擇輸出月份</h3>
-            <div class="flex justify-between items-center mb-4"><span class="text-xs text-slate-500">未選取月份將被隱藏</span><button class="px-2 py-1 text-xs border rounded" onclick="toggleAllMonths()">全選/反選</button></div>
-            <div class="print-month-grid" id="printMonthGrid"></div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold" onclick="closeModal('printModal')">取消</button>
-                <button class="px-5 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-bold shadow-lg" onclick="executePrintOrExport()">確認執行</button>
+                <div id="calendarGridWrapper"></div>
+            </div>
+    
+            <div class="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl">
+                <button class="px-6 py-2.5 text-slate-500 hover:bg-slate-200 rounded-xl font-bold text-sm transition" onclick="closeModal('dateModal')">取消</button>
+                <button class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm shadow-lg flex items-center gap-2 transition" onclick="saveDateModal()">
+                    <i class="ri-check-line text-lg"></i> 確定儲存
+                </button>
             </div>
         </div>
     </div>
@@ -156,22 +187,23 @@
 
         <div id="toolbar-container" class="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm z-10">
             <div class="text-lg font-bold text-slate-800 hidden md:flex items-center gap-2" id="pageTitle"><span class="w-2 h-6 bg-blue-600 rounded-full"></span> 附件1 - 消防人員</div>
-            <div id="yearSelectorContainer" class="hidden flex items-center gap-2">
+            
+            <div class="flex items-center gap-2">
                 <span class="text-sm font-bold text-slate-600">年度:</span>
-                <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg block p-1.5 font-bold">
+                <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg block p-1.5 font-bold outline-none focus:ring-2 focus:ring-blue-200">
                     <option value="2025" selected>114年 (2025)</option>
                     <option value="2026">115年 (2026)</option>
                     <option value="2027">116年 (2027)</option>
                     <option value="2028">117年 (2028)</option>
-                    <option value="2029">118年 (2029)</option>
                 </select>
             </div>
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" id="toolbar"></div>
+            
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar" id="toolbar"></div>
         </div>
 
         <div class="flex-1 overflow-hidden p-4 relative">
             <div id="view1" class="view-section h-full flex flex-col">
-                <div class="table-container flex-1 mb-4">
+                <div class="table-container flex-1 mb-4 custom-scrollbar">
                     <table id="table1">
                         <thead><tr><th style="width:50px">刪除</th><th style="width:40px">項次</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:80px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">上課地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:100px" class="col-blue-light">預計調用人數<br>(分隊人力)</th><th style="width:120px" class="col-yellow">是否提供宜基<br>北桃參訓</th><th style="width:60px" class="col-yellow">暫訂<br>新北</th><th style="width:60px" class="col-yellow">暫訂<br>基隆</th><th style="width:60px" class="col-yellow">暫訂<br>桃園</th><th style="width:60px" class="col-yellow">暫訂<br>宜蘭</th><th style="width:150px">備註</th></tr></thead>
                         <tbody id="tbody1"></tbody>
@@ -181,7 +213,7 @@
             </div>
 
             <div id="view2" class="view-section hidden h-full flex flex-col">
-                <div class="table-container flex-1 mb-4">
+                <div class="table-container flex-1 mb-4 custom-scrollbar">
                     <table id="table2">
                         <thead><tr><th style="width:50px">刪除</th><th style="width:40px">序號</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:120px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">訓練地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:80px">調用本局<br>教官人數</th><th style="width:100px">是否提供<br>跨縣市</th><th style="width:150px">備註</th></tr></thead>
                         <tbody id="tbody2"></tbody>
@@ -191,7 +223,7 @@
             </div>
 
             <div id="view3" class="view-section hidden h-full flex flex-col">
-                <div class="table-container flex-1 mb-4">
+                <div class="table-container flex-1 mb-4 custom-scrollbar">
                     <table id="table3">
                         <thead><tr><th style="width:50px">刪除</th><th style="width:40px">序號</th><th style="width:100px">承辦單位</th><th style="width:250px">重大活動演習名稱</th><th style="width:150px">參加對象</th><th style="width:140px">日期</th><th style="width:50px">天數</th><th style="width:50px">時數</th><th style="width:100px" class="col-red-light">每日調用<br>外勤人數</th><th style="width:150px">地點(教室)</th></tr></thead>
                         <tbody id="tbody3"></tbody>
@@ -205,7 +237,7 @@
                     <i class="ri-calendar-event-line text-lg text-amber-500"></i>
                     <span><strong>說明：</strong> 紅色底色代表國定假日或週末。資料來源：行政院行事曆(透過 Google 日曆)。</span>
                 </div>
-                <div class="table-container flex-1 p-4 bg-white">
+                <div class="table-container flex-1 p-4 bg-white custom-scrollbar">
                     <div id="ganttExportArea">
                         <table id="table4">
                             <tbody id="ganttContainer"></tbody>
@@ -224,16 +256,14 @@
         let d2 = [{ m: '1', unit: '', name: '', date: '', inst: 0, ex: [], isNew: true }];
         let d3 = [{ unit: '', name: '', date: '', mp: 0, ex: [], isNew: true }];
         let currentTab = 1; 
-        let printActionType = '';
         let currentYear = 2025; 
         let holidays = {};
         
-        let currentEdit = null;
-        let selectedDates = new Set();
-        let currentCalendarMonth = 1;
+        let currentEdit = { tab: null, index: null };
+        let tempExcluded = new Set();
 
         // =========================================
-        // 核心渲染函式 (移至最前，防止 ReferenceError)
+        // 核心渲染函式
         // =========================================
         function renderT1() {
             const tb = document.getElementById('tbody1'); 
@@ -253,8 +283,8 @@
                 <td><input type="number" value="${r.pb || ''}" onchange="d1[${i}].pb=this.value"></td>
                 <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
                 <td><input type="number" value="${r.dHour || ''}" onchange="d1[${i}].dHour=this.value"></td>
-                <td><input type="number" value="${r.bh || ''}" onchange="d1[${i}].bh=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bh) || 0}</td>
+                <td><input type="number" value="${r.bHour || ''}" onchange="d1[${i}].bHour=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bHour) || 0}</td>
                 <td class="col-blue-light"><input type="number" value="${r.mp || ''}" onchange="d1[${i}].mp=this.value"></td>
                 <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d1[${i}].ext=this.checked"></td>
                 <td><input type="number" value="${r.nt || ''}" onchange="d1[${i}].nt=this.value"></td>
@@ -316,7 +346,7 @@
         function renderAll() { renderT1(); renderT2(); renderT3(); }
 
         // =========================================
-        // 主邏輯
+        // 主邏輯 & 初始化
         // =========================================
 
         function toggleMobileSidebar() {
@@ -332,7 +362,6 @@
 
         function changeYear(val) {
             currentYear = parseInt(val);
-            currentCalendarMonth = 1;
             showLoading(true, `正在載入 ${currentYear} 年資料...`);
             fetchHolidays(currentYear).then(() => {
                 if(currentTab === 4) renderGantt(); 
@@ -341,7 +370,6 @@
         }
 
         async function fetchHolidays(year) {
-            if (GAS_API_URL.includes("請填入")) return;
             try {
                 const res = await fetch(`${GAS_API_URL}?type=holidays&year=${year}`);
                 const json = await res.json();
@@ -358,7 +386,6 @@
         }
 
         function loadData() {
-            if (GAS_API_URL.includes("請填入")) { renderAll(); return; }
             showLoading(true, "正在同步雲端資料...");
             fetch(GAS_API_URL).then(r => r.json()).then(res => {
                 if (res.status === 'success') {
@@ -368,7 +395,11 @@
                     if (d1.length == 0) addRow(1); if (d2.length == 0) addRow(2); if (d3.length == 0) addRow(3);
                     renderAll();
                 }
-            }).catch(e => alert("連線錯誤: " + e)).finally(() => showLoading(false));
+            }).catch(e => {
+                console.error(e);
+                alert("連線錯誤，使用本地快取/空白資料");
+                renderAll();
+            }).finally(() => showLoading(false));
         }
 
         function saveData() {
@@ -391,12 +422,6 @@
             document.getElementById('pageTitle').innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> ${titles[idx - 1]}`;
             document.getElementById('mobilePageTitle').innerText = titles[idx - 1].replace(/附件\d - /, '');
             
-            if (idx === 4) {
-                document.getElementById('yearSelectorContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('yearSelectorContainer').classList.add('hidden');
-            }
-
             updateToolbar();
             if (idx === 4) renderGantt();
         }
@@ -404,25 +429,36 @@
         function updateToolbar() {
             const bar = document.getElementById('toolbar');
             let html = '';
-            const btnBase = "px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition whitespace-nowrap";
+            const btnBase = "px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition whitespace-nowrap cursor-pointer";
             const btnLight = `${btnBase} bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-blue-600`;
             const btnDark = `${btnBase} bg-slate-900 text-white hover:bg-slate-800 shadow-lg`;
             const btnGreen = `${btnBase} bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg`;
             const btnRed = `${btnBase} bg-rose-600 text-white hover:bg-rose-700 shadow-lg`;
 
             if (currentTab <= 3) {
-                html += `<button class="${btnLight}" onclick="downloadCSVTemplate()"><i class="ri-download-2-line"></i> 範例</button>`;
                 html += `<button class="${btnLight}" onclick="document.getElementById('csvInput').click()"><i class="ri-upload-2-line"></i> 匯入</button>`;
                 html += `<button class="${btnDark}" onclick="saveData()"><i class="ri-save-3-line"></i> 儲存資料</button>`;
             } else {
-                html += `<button class="${btnGreen}" onclick="openPrintModal('excel')"><i class="ri-file-excel-2-line"></i> 下載 Excel</button>`;
-                html += `<button class="${btnRed}" onclick="openPrintModal('download')"><i class="ri-file-pdf-line"></i> 下載 PDF</button>`;
+                html += `<button class="${btnGreen}" onclick="alert('請自行使用瀏覽器列印功能轉存為 PDF 或 Excel')"><i class="ri-file-excel-2-line"></i> 下載 Excel</button>`;
+                html += `<button class="${btnRed}" onclick="window.print()"><i class="ri-file-pdf-line"></i> 列印 / PDF</button>`;
             }
             bar.innerHTML = html;
         }
 
         function showLoading(s, t) { document.getElementById('loading').style.display = s ? 'flex' : 'none'; if (t) document.getElementById('loadText').innerText = t; }
-        function updateMonthFromDate(t, i, val) { let match = val.match(/^(\d+)\//); if (match) { let m = match[1]; if (t === 1) d1[i].m = m; if (t === 2) d2[i].m = m; document.getElementById(`m_${t}_${i}`).value = m; } if (t === 1) d1[i].date = val; if (t === 2) d2[i].date = val; if (t === 3) d3[i].date = val; }
+        function updateMonthFromDate(t, i, val) { 
+            let match = val.match(/^(\d+)\//); 
+            if (match) { 
+                let m = match[1]; 
+                if (t === 1) d1[i].m = m; 
+                if (t === 2) d2[i].m = m; 
+                let el = document.getElementById(`m_${t}_${i}`);
+                if(el) el.value = m; 
+            } 
+            if (t === 1) d1[i].date = val; 
+            if (t === 2) d2[i].date = val; 
+            if (t === 3) d3[i].date = val; 
+        }
 
         function addRow(t) {
             if (t === 1) d1.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', mp: 0, ext: false, nt: '', kl: '', ty: '', yl: '', note: '', ex: [], isNew: true });
@@ -439,34 +475,13 @@
 
         function processCSV(input) {
             if (!input.files[0]) return;
-            const file = input.files[0];
-            
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
+            Papa.parse(input.files[0], {
+                header: true, skipEmptyLines: true,
                 complete: function (results) {
-                    const data = results.data;
+                    let data = results.data;
+                    let shouldClear = confirm("清除現有資料？(確定=清除, 取消=附加)");
+                    if (shouldClear) { if (currentTab === 1) d1 = []; if (currentTab === 2) d2 = []; if (currentTab === 3) d3 = []; }
                     
-                    // 檢查目前表格是否已經有資料
-                    let currentData = (currentTab === 1) ? d1 : (currentTab === 2 ? d2 : d3);
-                    let hasData = currentData.length > 1 || (currentData.length === 1 && (currentData[0].unit !== '' || currentData[0].date !== ''));
-
-                    let shouldClear = false;
-                    
-                    if (hasData) {
-                        if (confirm("⚠️ 表格內已有資料！\n\n按「確定」：清除現有資料，只保留匯入的檔案 (覆蓋模式)。\n按「取消」：保留現有資料，將檔案加在最後面 (附加模式)。")) {
-                            shouldClear = true;
-                        }
-                    } else {
-                        shouldClear = true; 
-                    }
-
-                    if (shouldClear) {
-                        if (currentTab === 1) d1 = [];
-                        if (currentTab === 2) d2 = [];
-                        if (currentTab === 3) d3 = [];
-                    }
-
                     if (currentTab === 1) {
                         data.forEach(r => { d1.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', mp: r['預計調用人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', nt: r['新北']||'', kl: r['基隆']||'', ty: r['桃園']||'', yl: r['宜蘭']||'', note: r['備註']||'', ex: [], isNew: true }); });
                         renderT1();
@@ -477,53 +492,47 @@
                         data.forEach(r => { d3.push({ unit: r['承辦單位']||'', name: r['活動名稱']||'', target: r['參加對象']||'', date: r['日期']||'', days: r['天數']||'', hours: r['時數']||'', mp: r['每日調用人數']||'', loc: r['地點']||'', ex: [], isNew: true }); });
                         renderT3();
                     }
-                    input.value = ''; 
-                    alert(shouldClear ? "資料已覆蓋匯入" : "資料已附加匯入");
+                    input.value = ''; alert("匯入完成");
                 }
             });
         }
 
-        // [關鍵修正] 智慧日期解析：支援年份分流
+        // =========================================
+        // 日期解析邏輯 (修正版：支援年份過濾)
+        // =========================================
         function parseDateStr(str, excludeList) {
             let results = [];
             if (!str) return results;
             
             try {
-                // 1. 偵測年份 (114年, 2025/ 等)
+                // 1. 偵測年份
                 let specificYear = null;
-                // 抓取開頭的年份
                 let yearMatch = str.match(/(?:^|[^\d])(11[4-9]|12[0-9]|202[5-9])[年\/\.]/);
                 if (yearMatch) {
                     let y = parseInt(yearMatch[1]);
                     specificYear = (y < 1000) ? (y + 1911) : y;
                 }
 
-                // 2. 預處理 (保留數字、斜線、連接號)
+                // 2. 預處理
                 let s = str.trim()
                     .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
                     .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
-                    .replace(/11[3-6]年/g, '') // 移除年份字串以免干擾
+                    .replace(/11[3-6]年/g, '') 
                     .replace(/202[4-7]年/g, '')
-                    .replace(/月/g, '/')
-                    .replace(/日/g, '')
+                    .replace(/月/g, '/').replace(/日/g, '')
                     .replace(/～/g, '-').replace(/~/g, '-').replace(/－/g, '-')
                     .replace(/[、，,]/g, ' ')
                     .trim();
 
                 let tokens = s.split(/\s+/);
                 let currentMonth = null; 
-
-                // 使用 currentYear (全域變數) 作為基準，除非 specificYear 有值
-                let baseYear = specificYear || currentYear;
+                let baseYear = specificYear || currentYear; // 若字串無年份，則使用全域 currentYear
 
                 tokens.forEach(token => {
                     if (!token) return;
 
                     let explicitMonthMatch = token.match(/^(\d+)[\/.]/);
-                    if (explicitMonthMatch) {
-                        currentMonth = parseInt(explicitMonthMatch[1]);
-                    }
-
+                    if (explicitMonthMatch) currentMonth = parseInt(explicitMonthMatch[1]);
                     if (!currentMonth && !explicitMonthMatch) return;
 
                     // A: 跨月
@@ -539,61 +548,169 @@
                                 cur.setDate(cur.getDate() + 1);
                             }
                         }
-                        currentMonth = m2; 
-                        return;
+                        currentMonth = m2; return;
                     }
 
                     // B: 帶月份範圍
                     let rangeWithMonth = token.match(/(\d+)[\/.](\d+)-(\d+)/);
                     if (rangeWithMonth) {
-                        let m = parseInt(rangeWithMonth[1]);
-                        let d1 = parseInt(rangeWithMonth[2]);
-                        let d2 = parseInt(rangeWithMonth[3]);
+                        let m = parseInt(rangeWithMonth[1]), d1 = parseInt(rangeWithMonth[2]), d2 = parseInt(rangeWithMonth[3]);
                         currentMonth = m;
-                        if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: m, d: i, y: baseYear });
-                        }
+                        if (d2 >= d1) { for (let i = d1; i <= d2; i++) results.push({ m: m, d: i, y: baseYear }); }
                         return;
                     }
 
                     // C: 純日期範圍
                     let rangeNoMonth = token.match(/^(\d+)-(\d+)$/);
                     if (rangeNoMonth) {
-                        let d1 = parseInt(rangeNoMonth[1]);
-                        let d2 = parseInt(rangeNoMonth[2]);
-                        if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: baseYear });
-                        }
+                        let d1 = parseInt(rangeNoMonth[1]), d2 = parseInt(rangeNoMonth[2]);
+                        if (d2 >= d1) { for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: baseYear }); }
                         return;
                     }
 
-                    // D: 帶月份單日
+                    // D/E: 單日
                     let singleWithMonth = token.match(/(\d+)[\/.](\d+)/);
                     if (singleWithMonth) {
-                        let m = parseInt(singleWithMonth[1]);
-                        let d = parseInt(singleWithMonth[2]);
-                        currentMonth = m;
-                        results.push({ m: m, d: d, y: baseYear });
-                        return;
+                        let m = parseInt(singleWithMonth[1]), d = parseInt(singleWithMonth[2]);
+                        currentMonth = m; results.push({ m: m, d: d, y: baseYear }); return;
                     }
-
-                    // E: 純單日
                     let singleNoMonth = token.match(/^(\d+)$/);
                     if (singleNoMonth) {
                         let d = parseInt(singleNoMonth[1]);
-                        results.push({ m: currentMonth, d: d, y: baseYear });
-                        return;
+                        results.push({ m: currentMonth, d: d, y: baseYear }); return;
                     }
                 });
 
                 if (excludeList && excludeList.length > 0) {
                     results = results.filter(o => !excludeList.includes(o.d));
                 }
-
             } catch (e) { console.error("日期解析失敗:", e); }
             return results;
         }
 
+        // =========================================
+        // Modal 邏輯 (日期選填)
+        // =========================================
+        function openDateModal(tab, index) {
+            currentEdit = { tab, index };
+            let rowData;
+            if (tab === 1) rowData = d1[index];
+            if (tab === 2) rowData = d2[index];
+            if (tab === 3) rowData = d3[index];
+
+            document.getElementById('modalYearDisplay').innerText = `目前年度: ${currentYear} (民國${currentYear-1911}年)`;
+            document.getElementById('dateModal').style.display = 'flex';
+            tempExcluded = new Set(rowData.ex || []);
+            renderModalCalendar(rowData.date);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            currentEdit = { tab: null, index: null };
+        }
+
+        function renderModalCalendar(dateStr) {
+            const container = document.getElementById('calendarGridWrapper');
+            container.innerHTML = '';
+
+            // 解析日期，並找出該年份有哪些月份需要顯示
+            const parsed = parseDateStr(dateStr, [], currentYear); // 先不帶排除清單，顯示所有範圍內的日期
+            const valid = parsed.filter(d => d.y === currentYear);
+
+            if (valid.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-10"><p>無法解析有效日期</p><p class="text-xs">請先輸入格式如 "1/5-1/9" 的日期</p></div>`;
+                return;
+            }
+
+            // 按月份分組
+            let grouped = {};
+            valid.forEach(o => {
+                if(!grouped[o.m]) grouped[o.m] = [];
+                grouped[o.m].push(o);
+            });
+
+            // 渲染
+            Object.keys(grouped).sort((a,b)=>a-b).forEach(m => {
+                let html = `<div>
+                    <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-4 bg-blue-500 rounded-full"></span> ${m} 月
+                    </h4>
+                    <div class="grid grid-cols-7 gap-2">`;
+                
+                grouped[m].forEach(o => {
+                    const isEx = tempExcluded.has(o.d);
+                    const isOff = isDayOff(currentYear, m, o.d);
+                    const btnClass = isEx 
+                        ? 'bg-slate-50 text-slate-300 border-slate-100 decoration-slate-400 line-through opacity-70' 
+                        : (isOff ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-700 border-slate-200 shadow-sm hover:border-blue-400');
+                    
+                    html += `<button onclick="toggleModalDate(${o.d})" 
+                        class="day-btn relative p-2 border rounded-lg transition-all ${btnClass}">
+                        <span class="text-xs absolute top-1 left-1 opacity-50">${isOff ? '休' : ''}</span>
+                        <span class="text-lg font-medium">${o.d}</span>
+                        ${!isEx ? '<div class="dot-indicator"></div>' : ''}
+                    </button>`;
+                });
+                html += `</div></div><hr class="my-4 border-slate-100">`;
+                container.innerHTML += html;
+            });
+        }
+
+        function toggleModalDate(day) {
+            if (tempExcluded.has(day)) tempExcluded.delete(day);
+            else tempExcluded.add(day);
+            // 重新渲染以更新狀態
+            let rowData = (currentEdit.tab===1 ? d1 : (currentEdit.tab===2 ? d2 : d3))[currentEdit.index];
+            renderModalCalendar(rowData.date);
+        }
+
+        function applyDateFilter(type) {
+            let rowData = (currentEdit.tab===1 ? d1 : (currentEdit.tab===2 ? d2 : d3))[currentEdit.index];
+            const parsed = parseDateStr(rowData.date, [], currentYear);
+            const valid = parsed.filter(d => d.y === currentYear);
+
+            if (type === 'clear') tempExcluded.clear();
+            else {
+                valid.forEach(d => {
+                    const dt = new Date(d.y, d.m - 1, d.d);
+                    const w = dt.getDay();
+                    const isOff = isDayOff(d.y, d.m, d.d);
+                    
+                    if (type === 'all') tempExcluded.add(d.d);
+                    if (type === 'no-weekend' && (w===0 || w===6 || isOff)) tempExcluded.add(d.d);
+                    if (type === 'only-weekend' && (w!==0 && w!==6 && !isOff)) tempExcluded.add(d.d);
+                });
+            }
+            renderModalCalendar(rowData.date);
+        }
+
+        function saveDateModal() {
+            const { tab, index } = currentEdit;
+            if (tab === null) return;
+            
+            let arr = (tab === 1) ? d1 : (tab === 2 ? d2 : d3);
+            
+            // 1. 儲存排除列表
+            arr[index].ex = Array.from(tempExcluded);
+            
+            // 2. [關鍵修復] 鎖定年份
+            // 如果目前的日期字串沒有年份 (e.g., "1/5")，強制加上年份前綴 (e.g., "114/1/5")
+            // 這樣切換到 2026 年時，解析器就會看到 114 年，進而濾掉
+            let currentDate = arr[index].date;
+            if (currentDate && !currentDate.match(/(11[0-9]|202[0-9])[\/.]/)) {
+                let rocYear = currentYear - 1911;
+                arr[index].date = `${rocYear}/${currentDate}`;
+            }
+
+            if (tab === 1) renderT1();
+            if (tab === 2) renderT2();
+            if (tab === 3) renderT3();
+            closeModal('dateModal');
+        }
+
+        // =========================================
+        // 甘特圖邏輯
+        // =========================================
         function renderGantt() {
             const table = document.getElementById('table4');
             const container = document.getElementById('ganttContainer');
@@ -613,13 +730,16 @@
 
             const newContainer = document.getElementById('ganttContainer');
             let rows = [];
+            
+            // 使用共用的 parseDateStr
             const parse = (r) => parseDateStr(r.date, r.ex);
 
             const add = (r, val, prefix) => {
                 let daysSet = parse(r);
                 
-                // [關鍵] 過濾非當年度的資料
+                // [關鍵] 嚴格過濾非當年度的資料
                 // 如果 daysSet 裡的 y (年份) 不等於 currentYear，就把它濾掉
+                // 例如: 使用者輸入 "114/1/5"，而 currentYear 是 2026 (115)，這裡就會回傳空陣列
                 daysSet = daysSet.filter(d => d.y === currentYear);
 
                 if (daysSet.length === 0) return;
@@ -643,7 +763,6 @@
                 
                 let tbody = document.createElement('tbody');
                 tbody.className = 'gantt-month-group';
-                tbody.id = `month-${m}`;
                 let html = `<tr class="gantt-month-header"><td colspan="32">${m} 月份</td></tr>`;
                 let sum = Array(32).fill(0);
 
@@ -671,7 +790,7 @@
                 });
 
                 let sRow = `<tr class="stats-row"><td class="col-fix-name" style="text-align:center;">每日統計</td>`;
-                for (let i = 1; i <= 31; i++) sRow += `<td class="col-fix-day">${sum[i]}</td>`;
+                for (let i = 1; i <= 31; i++) sRow += `<td class="col-fix-day">${sum[i] > 0 ? sum[i] : ''}</td>`;
                 html += sRow + '</tr>';
                 tbody.innerHTML = html;
                 newContainer.appendChild(tbody);
