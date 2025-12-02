@@ -280,7 +280,7 @@
             <div class="text-lg font-bold text-slate-800 hidden md:flex items-center gap-2" id="pageTitle">
                 <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 附件1 - 消防人員
             </div>
-            <!-- 年份選擇器 (新增) -->
+            <!-- 年份選擇器 -->
             <div id="yearSelectorContainer" class="hidden flex items-center gap-2">
                 <span class="text-sm font-bold text-slate-600">年度:</span>
                 <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 font-bold">
@@ -393,7 +393,7 @@
         
         // 年份與假日設定
         let currentYear = 2025; 
-        let holidays = {}; // 儲存 '2025-1-1': true
+        let holidays = {}; 
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -405,43 +405,32 @@
         window.onload = function () { 
             updateToolbar(); 
             loadData(); 
-            // 啟動時先抓一次假日
             fetchHolidays(currentYear);
         };
 
-        // 切換年份
         function changeYear(val) {
             currentYear = parseInt(val);
-            currentCalendarMonth = 1; // 重置日曆到1月
+            currentCalendarMonth = 1;
             showLoading(true, `正在載入 ${currentYear} 年資料...`);
             fetchHolidays(currentYear).then(() => {
-                if(currentTab === 4) renderGantt(); // 重繪甘特圖
+                if(currentTab === 4) renderGantt(); 
                 showLoading(false);
             });
         }
 
-        // 抓取假日
         async function fetchHolidays(year) {
             if (GAS_API_URL.includes("請填入")) return;
             try {
-                // 呼叫 GAS 取得假日
                 const res = await fetch(`${GAS_API_URL}?type=holidays&year=${year}`);
                 const json = await res.json();
-                if(json.status === 'success') {
-                    holidays = json.holidays; // 更新假日快取
-                }
-            } catch(e) {
-                console.error("無法取得假日", e);
-            }
+                if(json.status === 'success') holidays = json.holidays; 
+            } catch(e) { console.error("無法取得假日", e); }
         }
 
-        // 判斷是否為假日 (六日 OR 國定假日)
         function isDayOff(year, month, day) {
             const dateStr = `${year}-${month}-${day}`;
             const w = new Date(year, month - 1, day).getDay();
-            // 如果是國定假日 -> true
             if (holidays[dateStr]) return true;
-            // 如果是六日 -> true (除非以後要處理補班日，目前先單純化)
             if (w === 0 || w === 6) return true;
             return false;
         }
@@ -480,7 +469,6 @@
             document.getElementById('pageTitle').innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> ${titles[idx - 1]}`;
             document.getElementById('mobilePageTitle').innerText = titles[idx - 1].replace(/附件\d - /, '');
             
-            // 只有甘特圖頁面顯示年份選單
             if (idx === 4) {
                 document.getElementById('yearSelectorContainer').classList.remove('hidden');
             } else {
@@ -515,6 +503,81 @@
         function updateMonthFromDate(t, i, val) { let match = val.match(/^(\d+)\//); if (match) { let m = match[1]; if (t === 1) d1[i].m = m; if (t === 2) d2[i].m = m; document.getElementById(`m_${t}_${i}`).value = m; } if (t === 1) d1[i].date = val; if (t === 2) d2[i].date = val; if (t === 3) d3[i].date = val; }
 
         function renderAll() { renderT1(); renderT2(); renderT3(); }
+
+        // =========================================
+        // 渲染表格函式 (已修復補回)
+        // =========================================
+        function renderT1() {
+            const tb = document.getElementById('tbody1'); tb.innerHTML = '';
+            d1.forEach((r, i) => {
+                tb.innerHTML += `<tr>
+                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(1,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
+                <td><input type="text" id="m_1_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
+                <td><input type="text" value="${r.unit || ''}" onchange="d1[${i}].unit=this.value"></td>
+                <td class="align-left"><textarea onchange="d1[${i}].name=this.value">${r.name || ''}</textarea></td>
+                <td><input type="text" value="${r.target || ''}" onchange="d1[${i}].target=this.value"></td>
+                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(1,${i},this.value)" placeholder="1/6-19"><button class="btn-calendar" onclick="openDateModal(1,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td><input type="text" value="${r.loc || ''}" onchange="d1[${i}].loc=this.value"></td>
+                <td><input type="number" value="${r.batch || ''}" onchange="d1[${i}].batch=this.value"></td>
+                <td><input type="number" value="${r.pb || ''}" onchange="d1[${i}].pb=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
+                <td><input type="number" value="${r.dHour || ''}" onchange="d1[${i}].dHour=this.value"></td>
+                <td><input type="number" value="${r.bh || ''}" onchange="d1[${i}].bh=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bh) || 0}</td>
+                <td class="col-blue-light"><input type="number" value="${r.mp || ''}" onchange="d1[${i}].mp=this.value"></td>
+                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d1[${i}].ext=this.checked"></td>
+                <td><input type="number" value="${r.nt || ''}" onchange="d1[${i}].nt=this.value"></td>
+                <td><input type="number" value="${r.kl || ''}" onchange="d1[${i}].kl=this.value"></td>
+                <td><input type="number" value="${r.ty || ''}" onchange="d1[${i}].ty=this.value"></td>
+                <td><input type="number" value="${r.yl || ''}" onchange="d1[${i}].yl=this.value"></td>
+                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d1[${i}].note=this.value"></td>
+                </tr>`;
+            });
+        }
+
+        function renderT2() {
+            const tb = document.getElementById('tbody2'); tb.innerHTML = '';
+            d2.forEach((r, i) => {
+                tb.innerHTML += `<tr>
+                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(2,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
+                <td><input type="text" id="m_2_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
+                <td><input type="text" value="${r.unit || ''}" onchange="d2[${i}].unit=this.value"></td>
+                <td class="align-left"><textarea onchange="d2[${i}].name=this.value">${r.name || ''}</textarea></td>
+                <td><input type="text" value="${r.target || ''}" onchange="d2[${i}].target=this.value"></td>
+                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(2,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(2,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td><input type="text" value="${r.loc || ''}" onchange="d2[${i}].loc=this.value"></td>
+                <td><input type="number" value="${r.batch || ''}" onchange="d2[${i}].batch=this.value"></td>
+                <td><input type="number" value="${r.pb || ''}" onchange="d2[${i}].pb=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
+                <td><input type="number" value="${r.dHour || ''}" onchange="d2[${i}].dHour=this.value"></td>
+                <td><input type="number" value="${r.bHour || ''}" onchange="d2[${i}].bHour=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bHour) || 0}</td>
+                <td><input type="number" value="${r.inst || ''}" onchange="d2[${i}].inst=this.value"></td>
+                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d2[${i}].ext=this.checked"></td>
+                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d2[${i}].note=this.value"></td>
+                </tr>`;
+            });
+        }
+
+        function renderT3() {
+            const tb = document.getElementById('tbody3'); tb.innerHTML = '';
+            d3.forEach((r, i) => {
+                tb.innerHTML += `<tr>
+                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(3,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
+                <td><input type="text" value="${r.unit || ''}" onchange="d3[${i}].unit=this.value"></td>
+                <td class="align-left"><textarea onchange="d3[${i}].name=this.value">${r.name || ''}</textarea></td>
+                <td><input type="text" value="${r.target || ''}" onchange="d3[${i}].target=this.value"></td>
+                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(3,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(3,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td><input type="number" value="${r.days || ''}" onchange="d3[${i}].days=this.value"></td>
+                <td><input type="number" value="${r.hours || ''}" onchange="d3[${i}].hours=this.value"></td>
+                <td class="col-red-light"><input type="number" value="${r.mp || ''}" onchange="d3[${i}].mp=this.value"></td>
+                <td class="align-left"><input type="text" value="${r.loc || ''}" onchange="d3[${i}].loc=this.value"></td>
+                </tr>`;
+            });
+        }
 
         // =========================================
         // 新增與刪除功能
