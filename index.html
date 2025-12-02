@@ -41,7 +41,7 @@
         textarea { width: 100%; min-height: 38px; height: 100%; border: none; resize: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; text-align: left; padding: 8px; box-sizing: border-box; line-height: 1.4; }
         textarea:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
 
-        /* 甘特圖 CSS */
+        /* 甘特圖 CSS - 強力對齊 */
         #table4 { width: 1232px !important; min-width: 1232px !important; max-width: 1232px !important; table-layout: fixed !important; border-collapse: collapse; margin: 0; }
         .col-fix-name { width: 300px !important; min-width: 300px !important; max-width: 300px !important; white-space: normal; word-break: break-all; line-height: 1.3; padding: 5px; border: 1px solid #000 !important; vertical-align: middle !important; background: #fff; box-sizing: border-box; }
         .col-fix-day { width: 30px !important; min-width: 30px !important; max-width: 30px !important; text-align: center; padding: 0 !important; border: 1px solid #000 !important; box-sizing: border-box; }
@@ -235,7 +235,7 @@
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
 
-        // === 核心渲染函式 (優先定義) ===
+        // === 核心渲染函式 ===
         function renderT1() {
             const tb = document.getElementById('tbody1'); 
             if(!tb) return;
@@ -353,7 +353,6 @@
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(e => { e.classList.remove('bg-blue-600/20', 'text-blue-300', 'border-blue-500/30'); e.classList.add('text-slate-400'); });
             
-            // 手動查找點擊的按鈕 (若 el 未傳入)
             if(!el) {
                 const sidebar = document.getElementById('sidebar');
                 if(sidebar) {
@@ -445,12 +444,12 @@
             return false;
         }
 
+        // 智慧日期解析修正版
         function parseDateStr(str, excludeList) {
             let results = [];
             if (!str) return results;
             
             try {
-                // 1. 偵測年份
                 let specificYear = null;
                 let yearMatch = str.match(/(?:^|[^\d])(11[4-9]|12[0-9]|202[5-9])[年\/\.]/);
                 if (yearMatch) {
@@ -458,7 +457,6 @@
                     specificYear = (y < 1000) ? (y + 1911) : y;
                 }
 
-                // 2. 預處理
                 let s = str.trim()
                     .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
                     .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
@@ -472,10 +470,12 @@
 
                 let tokens = s.split(/\s+/);
                 let currentMonth = null; 
-
-                // 智慧判斷邏輯：跟今天比
                 const today = new Date();
                 let baseYear = specificYear;
+
+                if (!baseYear) {
+                    baseYear = today.getFullYear();
+                }
 
                 tokens.forEach(token => {
                     if (!token) return;
@@ -487,28 +487,21 @@
 
                     if (!currentMonth && !explicitMonthMatch) return;
 
-                    // 判斷年份函式
                     let checkDate = (m, d) => {
                         if (specificYear) return specificYear; 
-                        // 如果沒寫年份，判斷是否過期
                         let tempDate = new Date(today.getFullYear(), m - 1, d);
-                        // 如果該日期比今天早 (例如今天是12/2，輸入1/12)，視為明年
                         if (tempDate < today) return today.getFullYear() + 1; 
                         return today.getFullYear(); 
                     };
 
-                    // A: 跨月
                     let crossMatch = token.match(/(\d+)[\/.](\d+)-(\d+)[\/.](\d+)/);
                     if (crossMatch) {
                         let m1 = parseInt(crossMatch[1]), d1 = parseInt(crossMatch[2]);
                         let m2 = parseInt(crossMatch[3]), d2 = parseInt(crossMatch[4]);
-                        
                         let y = checkDate(m1, d1); 
                         let cur = new Date(y, m1 - 1, d1);
                         let end = new Date(y, m2 - 1, d2);
-                        // 處理跨年範圍 (如 12/30 - 1/2)
                         if (end < cur) end.setFullYear(y + 1);
-
                         if (cur <= end) {
                             while (cur <= end) {
                                 results.push({ m: cur.getMonth() + 1, d: cur.getDate(), y: cur.getFullYear() });
@@ -519,13 +512,11 @@
                         return;
                     }
 
-                    // B: 帶月份範圍
                     let rangeWithMonth = token.match(/(\d+)[\/.](\d+)-(\d+)/);
                     if (rangeWithMonth) {
                         let m = parseInt(rangeWithMonth[1]);
                         let d1 = parseInt(rangeWithMonth[2]);
                         let d2 = parseInt(rangeWithMonth[3]);
-                        
                         let y = checkDate(m, d1);
                         currentMonth = m;
                         if (d2 >= d1) {
@@ -534,12 +525,10 @@
                         return;
                     }
 
-                    // C: 純日期範圍
                     let rangeNoMonth = token.match(/^(\d+)-(\d+)$/);
                     if (rangeNoMonth) {
                         let d1 = parseInt(rangeNoMonth[1]);
                         let d2 = parseInt(rangeNoMonth[2]);
-                        
                         let y = checkDate(currentMonth, d1);
                         if (d2 >= d1) {
                             for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: y });
@@ -547,19 +536,16 @@
                         return;
                     }
 
-                    // D: 帶月份單日
                     let singleWithMonth = token.match(/(\d+)[\/.](\d+)/);
                     if (singleWithMonth) {
                         let m = parseInt(singleWithMonth[1]);
                         let d = parseInt(singleWithMonth[2]);
-                        
                         let y = checkDate(m, d);
                         currentMonth = m;
                         results.push({ m: m, d: d, y: y });
                         return;
                     }
 
-                    // E: 純單日
                     let singleNoMonth = token.match(/^(\d+)$/);
                     if (singleNoMonth) {
                         let d = parseInt(singleNoMonth[1]);
@@ -602,7 +588,7 @@
 
             const add = (r, val, prefix) => {
                 let daysSet = parse(r);
-                daysSet = daysSet.filter(d => d.y === currentYear); // 關鍵過濾
+                daysSet = daysSet.filter(d => d.y === currentYear);
 
                 if (daysSet.length === 0) return;
 
@@ -669,7 +655,6 @@
             const originalOverflow = container.style.overflow;
             const originalWidth = container.style.width;
 
-            // 強制切換到甘特圖頁面以確保渲染
             const originalTab = currentTab;
             if(originalTab !== 4) {
                 switchTab(4); 
@@ -698,7 +683,6 @@
 
             showLoading(true, "正在產生 PDF...");
 
-            // 給一點時間讓瀏覽器渲染
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save()
                 .then(() => {
@@ -719,39 +703,54 @@
             }, 500);
         }
 
-        // 載入資料
-        function loadData() {
-            if (GAS_API_URL.includes("請填入")) { renderAll(); return; }
-            showLoading(true, "正在同步雲端資料...");
-            fetch(GAS_API_URL).then(r => r.json()).then(res => {
-                if (res.status === 'success') {
-                    d1 = (res.d1 || []).map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], mp: r[12], ext: r[13] === 'true', nt: r[14], kl: r[15], ty: r[16], yl: r[17], note: r[18], ex: JSON.parse(r[19] || '[]'), isNew: false, dHour: r[9], bHour: r[10] }));
-                    d2 = (res.d2 || []).map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], inst: r[12], ext: r[13] === 'true', note: r[14], ex: JSON.parse(r[15] || '[]'), isNew: false, dHour: r[9], bHour: r[10] }));
-                    d3 = (res.d3 || []).map(r => ({ unit: r[0], name: r[1], target: r[2], date: r[3], days: r[4], hours: r[5], mp: r[6], loc: r[7], ex: JSON.parse(r[8] || '[]'), isNew: false }));
-                    if (d1.length == 0) addRow(1); if (d2.length == 0) addRow(2); if (d3.length == 0) addRow(3);
-                    renderAll();
-                }
-            }).catch(e => alert("連線錯誤: " + e)).finally(() => showLoading(false));
-        }
+        // Excel 下載 (修復版)
+        async function exportExcelJS(selM) {
+            const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('甘特圖');
+            sh.getColumn(1).width = 50; for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
+            sh.addRow([`${currentYear}年 班期 / 活動名稱`, ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
+            
+            let rows = []; 
+            const parse = (r) => parseDateStr(r.date, r.ex);
+            
+            const add = (r, val, pre) => { 
+                let ds = parse(r);
+                ds = ds.filter(d => d.y === currentYear); // 關鍵過濾
+                let ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b); 
+                ms.forEach(m => { rows.push({ m: m, n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`, ds: ds.filter(o => o.m == m).map(o => o.d), v: val }); }); 
+            };
+            
+            d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') }); 
+            d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官') }); 
+            d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') });
+            
+            let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
 
-        function saveData() {
-            showLoading(true, "正在儲存至雲端...");
-            const p1 = d1.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch * r.pb) || 0, r.dHour, r.bHour, (r.batch * r.bHour) || 0, r.mp, r.ext, r.nt, r.kl, r.ty, r.yl, r.note, JSON.stringify(r.ex)]);
-            const p2 = d2.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch * r.pb) || 0, r.dHour, r.bHour, (r.batch * r.bHour) || 0, r.inst, r.ext, r.note, JSON.stringify(r.ex)]);
-            const p3 = d3.map(r => [r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc, JSON.stringify(r.ex)]);
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ d1: p1, d2: p2, d3: p3 }), headers: { 'Content-Type': 'text/plain' } })
-                .then(r => r.json()).then(res => { if (res.status === 'success') { alert(res.message);[d1, d2, d3].forEach(arr => arr.forEach(r => r.isNew = false)); renderAll(); } else alert("錯誤: " + res.message); })
-                .finally(() => showLoading(false));
-        }
-
-        // CSV Template (Restored)
-        function downloadCSVTemplate() {
-            let csvContent = "\uFEFF"; 
-            if (currentTab === 1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
-            else if (currentTab === 2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
-            else if (currentTab === 3) csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            saveAs(blob, `附件${currentTab}_範本.csv`);
+            selM.forEach(m => {
+                if (grp[m].length === 0) return;
+                let mt = sh.addRow([`${m} 月份`]); mt.font = { bold: true, size: 12 }; mt.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFe2e8f0' } };
+                let sum = Array(32).fill(0);
+                grp[m].forEach(r => {
+                    let dVis = [r.n], dDat = [""];
+                    for (let i = 1; i <= 31; i++) {
+                        if (r.ds.includes(i)) {
+                            dVis.push("");
+                            let vShow = "";
+                            if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) { vShow = parseInt(r.v); }
+                            dDat.push(vShow);
+                            sum[i] += parseInt(r.v) || 0;
+                        } else { dVis.push(""); dDat.push(""); }
+                    }
+                    let rVis = sh.addRow(dVis); let rDat = sh.addRow(dDat);
+                    rVis.eachCell((c, col) => { c.border = { right: { style: 'thin' } }; if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3b82f6' } }; });
+                    rDat.eachCell((c, col) => { c.border = { bottom: { style: 'thick' }, right: { style: 'thin' }, left: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; if (col === 1) c.alignment = { horizontal: 'left', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.font = { bold: true }; });
+                    sh.mergeCells(rVis.number, 1, rDat.number, 1);
+                });
+                let sd = ["每日統計"]; for (let i = 1; i <= 31; i++) sd.push(sum[i]);
+                let sr = sh.addRow(sd);
+                sr.eachCell((c) => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf1f5f9' } }; c.font = { bold: true, color: { argb: 'FF1e40af' } }; c.border = { top: { style: 'double' }, bottom: { style: 'thick' }, left: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; });
+                sh.addRow([]);
+            });
+            const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), "甘特圖報表.xlsx");
         }
 
         // Window Onload (Start)
