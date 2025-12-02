@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>訓練流路管理系統</title>
+    <title>訓練流路管理系統 (最終修正版)</title>
 
     <!-- 核心工具庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -159,9 +159,11 @@
             <div id="yearSelectorContainer" class="hidden flex items-center gap-2">
                 <span class="text-sm font-bold text-slate-600">年度:</span>
                 <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg block p-1.5 font-bold">
-                    <option value="2024">113年 (2024)</option>
                     <option value="2025" selected>114年 (2025)</option>
                     <option value="2026">115年 (2026)</option>
+                    <option value="2027">116年 (2027)</option>
+                    <option value="2028">117年 (2028)</option>
+                    <option value="2029">118年 (2029)</option>
                 </select>
             </div>
             <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" id="toolbar"></div>
@@ -230,7 +232,9 @@
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
 
-        // 核心渲染函式 (移至最前)
+        // =========================================
+        // 核心渲染函式 (移至最前，防止 ReferenceError)
+        // =========================================
         function renderT1() {
             const tb = document.getElementById('tbody1'); 
             if(!tb) return;
@@ -311,107 +315,10 @@
 
         function renderAll() { renderT1(); renderT2(); renderT3(); }
 
-        // [關鍵修正] 智慧日期解析：支援省略月份
-        function parseDateStr(str, excludeList) {
-            let results = [];
-            if (!str) return results;
-            
-            try {
-                // 1. 預處理
-                let s = str.trim()
-                    .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
-                    .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
-                    .replace(/11[3-6]年/g, '')
-                    .replace(/202[4-7]年/g, '')
-                    .replace(/月/g, '/')
-                    .replace(/日/g, '')
-                    .replace(/～/g, '-').replace(/~/g, '-').replace(/－/g, '-')
-                    .replace(/[、，,]/g, ' ') // 分隔符轉空白
-                    .trim();
-
-                let tokens = s.split(/\s+/);
-                let currentMonth = null; // 月份記憶
-
-                tokens.forEach(token => {
-                    if (!token) return;
-
-                    // 檢查明確月份
-                    let explicitMonthMatch = token.match(/^(\d+)[\/.]/);
-                    if (explicitMonthMatch) {
-                        currentMonth = parseInt(explicitMonthMatch[1]);
-                    }
-
-                    if (!currentMonth && !explicitMonthMatch) return;
-
-                    // A: 跨月 (1/30-2/2)
-                    let crossMatch = token.match(/(\d+)[\/.](\d+)-(\d+)[\/.](\d+)/);
-                    if (crossMatch) {
-                        let m1 = parseInt(crossMatch[1]), d1 = parseInt(crossMatch[2]);
-                        let m2 = parseInt(crossMatch[3]), d2 = parseInt(crossMatch[4]);
-                        let cur = new Date(currentYear, m1 - 1, d1);
-                        let end = new Date(currentYear, m2 - 1, d2);
-                        if (cur <= end) {
-                            while (cur <= end) {
-                                results.push({ m: cur.getMonth() + 1, d: cur.getDate() });
-                                cur.setDate(cur.getDate() + 1);
-                            }
-                        }
-                        currentMonth = m2; 
-                        return;
-                    }
-
-                    // B: 帶月份範圍 (1/19-23)
-                    let rangeWithMonth = token.match(/(\d+)[\/.](\d+)-(\d+)/);
-                    if (rangeWithMonth) {
-                        let m = parseInt(rangeWithMonth[1]);
-                        let d1 = parseInt(rangeWithMonth[2]);
-                        let d2 = parseInt(rangeWithMonth[3]);
-                        currentMonth = m;
-                        if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: m, d: i });
-                        }
-                        return;
-                    }
-
-                    // C: 純日期範圍 (26-30)
-                    let rangeNoMonth = token.match(/^(\d+)-(\d+)$/);
-                    if (rangeNoMonth) {
-                        let d1 = parseInt(rangeNoMonth[1]);
-                        let d2 = parseInt(rangeNoMonth[2]);
-                        if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i });
-                        }
-                        return;
-                    }
-
-                    // D: 帶月份單日 (1/19)
-                    let singleWithMonth = token.match(/(\d+)[\/.](\d+)/);
-                    if (singleWithMonth) {
-                        let m = parseInt(singleWithMonth[1]);
-                        let d = parseInt(singleWithMonth[2]);
-                        currentMonth = m;
-                        results.push({ m: m, d: d });
-                        return;
-                    }
-
-                    // E: 純單日 (9)
-                    let singleNoMonth = token.match(/^(\d+)$/);
-                    if (singleNoMonth) {
-                        let d = parseInt(singleNoMonth[1]);
-                        results.push({ m: currentMonth, d: d });
-                        return;
-                    }
-                });
-
-                if (excludeList && excludeList.length > 0) {
-                    results = results.filter(o => !excludeList.includes(o.d));
-                }
-
-            } catch (e) { console.error("日期解析失敗:", e); }
-            return results;
-        }
-
+        // =========================================
         // 主邏輯
+        // =========================================
+
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('hidden'); sidebar.classList.toggle('absolute'); sidebar.classList.toggle('h-full');
@@ -530,7 +437,163 @@
             if (t === 1) renderT1(); if (t === 2) renderT2(); if (t === 3) renderT3();
         }
 
-        // --- Gantt Chart Rendering ---
+        function processCSV(input) {
+            if (!input.files[0]) return;
+            const file = input.files[0];
+            
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    const data = results.data;
+                    
+                    // 檢查目前表格是否已經有資料
+                    let currentData = (currentTab === 1) ? d1 : (currentTab === 2 ? d2 : d3);
+                    let hasData = currentData.length > 1 || (currentData.length === 1 && (currentData[0].unit !== '' || currentData[0].date !== ''));
+
+                    let shouldClear = false;
+                    
+                    if (hasData) {
+                        if (confirm("⚠️ 表格內已有資料！\n\n按「確定」：清除現有資料，只保留匯入的檔案 (覆蓋模式)。\n按「取消」：保留現有資料，將檔案加在最後面 (附加模式)。")) {
+                            shouldClear = true;
+                        }
+                    } else {
+                        shouldClear = true; 
+                    }
+
+                    if (shouldClear) {
+                        if (currentTab === 1) d1 = [];
+                        if (currentTab === 2) d2 = [];
+                        if (currentTab === 3) d3 = [];
+                    }
+
+                    if (currentTab === 1) {
+                        data.forEach(r => { d1.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', mp: r['預計調用人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', nt: r['新北']||'', kl: r['基隆']||'', ty: r['桃園']||'', yl: r['宜蘭']||'', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT1();
+                    } else if (currentTab === 2) {
+                        data.forEach(r => { d2.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', inst: r['調用教官人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT2();
+                    } else if (currentTab === 3) {
+                        data.forEach(r => { d3.push({ unit: r['承辦單位']||'', name: r['活動名稱']||'', target: r['參加對象']||'', date: r['日期']||'', days: r['天數']||'', hours: r['時數']||'', mp: r['每日調用人數']||'', loc: r['地點']||'', ex: [], isNew: true }); });
+                        renderT3();
+                    }
+                    input.value = ''; 
+                    alert(shouldClear ? "資料已覆蓋匯入" : "資料已附加匯入");
+                }
+            });
+        }
+
+        // [關鍵修正] 智慧日期解析：支援年份分流
+        function parseDateStr(str, excludeList) {
+            let results = [];
+            if (!str) return results;
+            
+            try {
+                // 1. 偵測年份 (114年, 2025/ 等)
+                let specificYear = null;
+                // 抓取開頭的年份
+                let yearMatch = str.match(/(?:^|[^\d])(11[4-9]|12[0-9]|202[5-9])[年\/\.]/);
+                if (yearMatch) {
+                    let y = parseInt(yearMatch[1]);
+                    specificYear = (y < 1000) ? (y + 1911) : y;
+                }
+
+                // 2. 預處理 (保留數字、斜線、連接號)
+                let s = str.trim()
+                    .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
+                    .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
+                    .replace(/11[3-6]年/g, '') // 移除年份字串以免干擾
+                    .replace(/202[4-7]年/g, '')
+                    .replace(/月/g, '/')
+                    .replace(/日/g, '')
+                    .replace(/～/g, '-').replace(/~/g, '-').replace(/－/g, '-')
+                    .replace(/[、，,]/g, ' ')
+                    .trim();
+
+                let tokens = s.split(/\s+/);
+                let currentMonth = null; 
+
+                // 使用 currentYear (全域變數) 作為基準，除非 specificYear 有值
+                let baseYear = specificYear || currentYear;
+
+                tokens.forEach(token => {
+                    if (!token) return;
+
+                    let explicitMonthMatch = token.match(/^(\d+)[\/.]/);
+                    if (explicitMonthMatch) {
+                        currentMonth = parseInt(explicitMonthMatch[1]);
+                    }
+
+                    if (!currentMonth && !explicitMonthMatch) return;
+
+                    // A: 跨月
+                    let crossMatch = token.match(/(\d+)[\/.](\d+)-(\d+)[\/.](\d+)/);
+                    if (crossMatch) {
+                        let m1 = parseInt(crossMatch[1]), d1 = parseInt(crossMatch[2]);
+                        let m2 = parseInt(crossMatch[3]), d2 = parseInt(crossMatch[4]);
+                        let cur = new Date(baseYear, m1 - 1, d1);
+                        let end = new Date(baseYear, m2 - 1, d2);
+                        if (cur <= end) {
+                            while (cur <= end) {
+                                results.push({ m: cur.getMonth() + 1, d: cur.getDate(), y: cur.getFullYear() });
+                                cur.setDate(cur.getDate() + 1);
+                            }
+                        }
+                        currentMonth = m2; 
+                        return;
+                    }
+
+                    // B: 帶月份範圍
+                    let rangeWithMonth = token.match(/(\d+)[\/.](\d+)-(\d+)/);
+                    if (rangeWithMonth) {
+                        let m = parseInt(rangeWithMonth[1]);
+                        let d1 = parseInt(rangeWithMonth[2]);
+                        let d2 = parseInt(rangeWithMonth[3]);
+                        currentMonth = m;
+                        if (d2 >= d1) {
+                            for (let i = d1; i <= d2; i++) results.push({ m: m, d: i, y: baseYear });
+                        }
+                        return;
+                    }
+
+                    // C: 純日期範圍
+                    let rangeNoMonth = token.match(/^(\d+)-(\d+)$/);
+                    if (rangeNoMonth) {
+                        let d1 = parseInt(rangeNoMonth[1]);
+                        let d2 = parseInt(rangeNoMonth[2]);
+                        if (d2 >= d1) {
+                            for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: baseYear });
+                        }
+                        return;
+                    }
+
+                    // D: 帶月份單日
+                    let singleWithMonth = token.match(/(\d+)[\/.](\d+)/);
+                    if (singleWithMonth) {
+                        let m = parseInt(singleWithMonth[1]);
+                        let d = parseInt(singleWithMonth[2]);
+                        currentMonth = m;
+                        results.push({ m: m, d: d, y: baseYear });
+                        return;
+                    }
+
+                    // E: 純單日
+                    let singleNoMonth = token.match(/^(\d+)$/);
+                    if (singleNoMonth) {
+                        let d = parseInt(singleNoMonth[1]);
+                        results.push({ m: currentMonth, d: d, y: baseYear });
+                        return;
+                    }
+                });
+
+                if (excludeList && excludeList.length > 0) {
+                    results = results.filter(o => !excludeList.includes(o.d));
+                }
+
+            } catch (e) { console.error("日期解析失敗:", e); }
+            return results;
+        }
+
         function renderGantt() {
             const table = document.getElementById('table4');
             const container = document.getElementById('ganttContainer');
@@ -554,6 +617,13 @@
 
             const add = (r, val, prefix) => {
                 let daysSet = parse(r);
+                
+                // [關鍵] 過濾非當年度的資料
+                // 如果 daysSet 裡的 y (年份) 不等於 currentYear，就把它濾掉
+                daysSet = daysSet.filter(d => d.y === currentYear);
+
+                if (daysSet.length === 0) return;
+
                 let involvedMonths = [...new Set(daysSet.map(o => o.m))].sort((a, b) => a - b);
                 involvedMonths.forEach(m => {
                     let daysInThisMonth = daysSet.filter(o => o.m === m).map(o => o.d);
