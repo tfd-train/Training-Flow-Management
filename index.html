@@ -426,7 +426,6 @@
                 html += `<button class="${btnDark}" onclick="saveData()"><i class="ri-save-3-line"></i> 儲存資料</button>`;
             } else {
                 html += `<button class="${btnGreen}" onclick="openPrintModal('excel')"><i class="ri-file-excel-2-line"></i> 下載 Excel</button>`;
-                // 3. 修正下載按鈕：直接呼叫 downloadPDF 函式
                 html += `<button class="${btnRed}" onclick="openPrintModal('download')"><i class="ri-file-pdf-line"></i> 下載 PDF</button>`;
             }
             bar.innerHTML = html;
@@ -489,7 +488,7 @@
             });
         }
 
-        // [智慧日期解析] 修正版
+        // [智慧日期解析] 修正版：加入「跟今天比」的智慧判斷
         function parseDateStr(str, excludeList) {
             let results = [];
             if (!str) return results;
@@ -518,8 +517,13 @@
                 let tokens = s.split(/\s+/);
                 let currentMonth = null; 
 
-                // 基準年份
-                let baseYear = specificYear || currentYear;
+                // 智慧判斷邏輯：如果沒寫年份，就跟今天比
+                const today = new Date();
+                let baseYear = specificYear;
+
+                if (!baseYear) {
+                    baseYear = today.getFullYear(); // 先假設是今年
+                }
 
                 tokens.forEach(token => {
                     if (!token) return;
@@ -531,13 +535,24 @@
 
                     if (!currentMonth && !explicitMonthMatch) return;
 
+                    // 判斷日期是否已過 (如果沒指定年份)
+                    // 這裡的邏輯：如果這個日期比今天早，且沒指定年份，就假設是明年
+                    let checkDate = (m, d) => {
+                        if (specificYear) return specificYear; // 有指定年份，聽使用者的
+                        let tempDate = new Date(today.getFullYear(), m - 1, d);
+                        if (tempDate < today) return today.getFullYear() + 1; // 過期了，算明年
+                        return today.getFullYear(); // 還沒過，算今年
+                    };
+
                     // A: 跨月
                     let crossMatch = token.match(/(\d+)[\/.](\d+)-(\d+)[\/.](\d+)/);
                     if (crossMatch) {
                         let m1 = parseInt(crossMatch[1]), d1 = parseInt(crossMatch[2]);
                         let m2 = parseInt(crossMatch[3]), d2 = parseInt(crossMatch[4]);
-                        let cur = new Date(baseYear, m1 - 1, d1);
-                        let end = new Date(baseYear, m2 - 1, d2);
+                        
+                        let y = checkDate(m1, d1); // 用開始日期判斷年份
+                        let cur = new Date(y, m1 - 1, d1);
+                        let end = new Date(y, m2 - 1, d2);
                         if (cur <= end) {
                             while (cur <= end) {
                                 results.push({ m: cur.getMonth() + 1, d: cur.getDate(), y: cur.getFullYear() });
@@ -554,9 +569,11 @@
                         let m = parseInt(rangeWithMonth[1]);
                         let d1 = parseInt(rangeWithMonth[2]);
                         let d2 = parseInt(rangeWithMonth[3]);
+                        
+                        let y = checkDate(m, d1);
                         currentMonth = m;
                         if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: m, d: i, y: baseYear });
+                            for (let i = d1; i <= d2; i++) results.push({ m: m, d: i, y: y });
                         }
                         return;
                     }
@@ -566,8 +583,10 @@
                     if (rangeNoMonth) {
                         let d1 = parseInt(rangeNoMonth[1]);
                         let d2 = parseInt(rangeNoMonth[2]);
+                        
+                        let y = checkDate(currentMonth, d1);
                         if (d2 >= d1) {
-                            for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: baseYear });
+                            for (let i = d1; i <= d2; i++) results.push({ m: currentMonth, d: i, y: y });
                         }
                         return;
                     }
@@ -577,8 +596,10 @@
                     if (singleWithMonth) {
                         let m = parseInt(singleWithMonth[1]);
                         let d = parseInt(singleWithMonth[2]);
+                        
+                        let y = checkDate(m, d);
                         currentMonth = m;
-                        results.push({ m: m, d: d, y: baseYear });
+                        results.push({ m: m, d: d, y: y });
                         return;
                     }
 
@@ -586,7 +607,8 @@
                     let singleNoMonth = token.match(/^(\d+)$/);
                     if (singleNoMonth) {
                         let d = parseInt(singleNoMonth[1]);
-                        results.push({ m: currentMonth, d: d, y: baseYear });
+                        let y = checkDate(currentMonth, d);
+                        results.push({ m: currentMonth, d: d, y: y });
                         return;
                     }
                 });
@@ -652,7 +674,9 @@
                 let sum = Array(32).fill(0);
 
                 grp[m].forEach(r => {
-                    let row1 = `<tr class="gantt-visual-row"><td class="col-fix-name" rowspan="2">${r.n}</td>`;
+                    let row1 = `<tr class="gantt-visual-row">
+                        <td class="col-fix-name" rowspan="2">${r.n}</td>`;
+
                     let row2 = `<tr class="gantt-data-row">`;
 
                     for (let i = 1; i <= 31; i++) {
@@ -665,18 +689,22 @@
                         if (act) sum[i] += val;
 
                         let vShow = '';
-                        if (act && r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0')) vShow = r.v;
+                        if (act && r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0')) {
+                            vShow = r.v;
+                        }
 
                         row1 += `<td class="col-fix-day gantt-cell-bar ${wkCls} ${act ? 'bar-active' : ''}"></td>`;
                         row2 += `<td class="col-fix-day gantt-num ${wkCls}">${vShow}</td>`;
                     }
-                    row1 += '</tr>'; row2 += '</tr>';
+                    row1 += '</tr>';
+                    row2 += '</tr>';
                     html += row1 + row2;
                 });
 
                 let sRow = `<tr class="stats-row"><td class="col-fix-name" style="text-align:center;">每日統計</td>`;
                 for (let i = 1; i <= 31; i++) sRow += `<td class="col-fix-day">${sum[i]}</td>`;
                 html += sRow + '</tr>';
+                
                 tbody.innerHTML = html;
                 newContainer.appendChild(tbody);
             }
