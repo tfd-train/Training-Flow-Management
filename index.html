@@ -18,10 +18,10 @@
 
     <script>
         // ==========================================
-        // ⚠️ 1. 系統連結 (已更新為您提供的版本)
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz4Aq4y4WGVo-YRUNcRR-rUeJnxpJXOD5wComlB2s2GeuHrLhc8plyRolyKs5cXt4uTog/exec";
+        // ⚠️ 1. 系統連結
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
 
-        // ⚠️ 2. 系統整合連結 (已更新為您提供的版本)
+        // ⚠️ 2. 系統整合連結
         const PORTAL_URL = "https://tfd-train.github.io/Training-Management-Platform/";
         const OTHER_SYSTEM_URL = "https://tfd-train.github.io/Facility-Booking/";
         // ==========================================
@@ -118,150 +118,65 @@
         textarea:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
 
         /* =========================================
-           甘特圖強力對齊 CSS (修正版)
+           甘特圖強力對齊 CSS
            ========================================= */
-        
-        /* 1. 表格本體：鎖死寬度與佈局演算法 */
         #table4 {
-            width: 1232px !important;     /* 300(名) + 930(日) + 2(邊框) */
-            min-width: 1232px !important;
-            max-width: 1232px !important;
-            table-layout: fixed !important; /* 關鍵：強制對齊 */
-            border-collapse: collapse;
-            margin: 0;
+            width: 1232px !important; min-width: 1232px !important; max-width: 1232px !important;
+            table-layout: fixed !important; border-collapse: collapse; margin: 0;
         }
-
-        /* 2. 名稱欄：鎖死 300px */
         .col-fix-name {
-            width: 300px !important;
-            min-width: 300px !important;
-            max-width: 300px !important;
-            white-space: normal;
-            word-break: break-all;
-            line-height: 1.3;
-            padding: 5px;
-            border: 1px solid #000 !important;
-            vertical-align: middle !important;
-            background: #fff;
-            box-sizing: border-box;
+            width: 300px !important; min-width: 300px !important; max-width: 300px !important;
+            white-space: normal; word-break: break-all; line-height: 1.3; padding: 5px;
+            border: 1px solid #000 !important; vertical-align: middle !important; background: #fff; box-sizing: border-box;
         }
-
-        /* 3. 日期欄：鎖死 30px */
         .col-fix-day {
-            width: 30px !important;
-            min-width: 30px !important;
-            max-width: 30px !important;
-            text-align: center;
-            padding: 0 !important;
-            border: 1px solid #000 !important;
-            box-sizing: border-box;
+            width: 30px !important; min-width: 30px !important; max-width: 30px !important;
+            text-align: center; padding: 0 !important; border: 1px solid #000 !important; box-sizing: border-box;
         }
-
-        /* 高度一致性 */
-        .gantt-visual-row, .gantt-data-row {
-            height: 28px;
-            line-height: 28px;
-        }
-
-        .gantt-cell-bar {
-            border-bottom: none;
-            height: 28px;
-        }
-
-        .gantt-num {
-            border-top: none;
-            font-weight: bold;
-            color: #000;
-            font-size: 12px;
-            height: 28px;
-            line-height: 28px;
-        }
-
+        .gantt-visual-row, .gantt-data-row { height: 28px; line-height: 28px; }
+        .gantt-cell-bar { border-bottom: none; height: 28px; }
+        .gantt-num { border-top: none; font-weight: bold; color: #000; font-size: 12px; height: 28px; line-height: 28px; }
+        
+        /* 假日樣式：六日或國定假日 */
         .weekend { background-color: #f3f4f6; }
+        .holiday-red { background-color: #fee2e2; } /* 國定假日紅底 */
 
-        .bar-active {
-            background-color: #3b82f6 !important;
-            border-color: #000;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        tbody.gantt-month-group {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            border-bottom: 2px solid #000;
-        }
-
-        .gantt-month-header td {
-            background: #e2e8f0;
-            font-weight: bold;
-            padding-left: 15px;
-            border: 1px solid #000;
-            font-size: 14px;
-            height: 32px;
-        }
-
-        .stats-row td {
-            background-color: #f8fafc;
-            border: 1px solid #000;
-            color: #1e40af;
-            font-weight: bold;
-            text-align: center;
-        }
+        .bar-active { background-color: #3b82f6 !important; border-color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        tbody.gantt-month-group { break-inside: avoid; page-break-inside: avoid; border-bottom: 2px solid #000; }
+        .gantt-month-header td { background: #e2e8f0; font-weight: bold; padding-left: 15px; border: 1px solid #000; font-size: 14px; height: 32px; }
+        .stats-row td { background-color: #f8fafc; border: 1px solid #000; color: #1e40af; font-weight: bold; text-align: center; }
 
         /* UI 元件 */
         .date-cell { display: flex; align-items: center; height: 100%; }
         .date-cell input { flex: 1; }
-        .btn-calendar {
-            width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1;
-            cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s;
-        }
+        .btn-calendar { width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; }
         .btn-calendar:hover { background: #e2e8f0; color: #3b82f6; }
-
         .col-yellow { background: #ffffcc !important; }
         .col-blue-light { background: #e0f2fe !important; }
         .col-red-light { background: #fee2e2 !important; }
 
         /* Modal */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
-        .day-btn {
-            padding: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer;
-            text-align: center; border-radius: 6px; font-size: 14px;
-        }
+        .day-btn { padding: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 6px; font-size: 14px; }
         .day-btn.active.excluded { background: #64748b; color: white; text-decoration: line-through; border-color: #475569; }
         .day-btn.active { background: #dbeafe; color: #1e40af; font-weight: bold; border-color: #3b82f6; }
         .print-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        .month-select-btn {
-            padding: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer;
-            text-align: center; border-radius: 8px; font-weight: bold; transition: 0.2s;
-        }
+        .month-select-btn { padding: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .month-select-btn:hover { background: #f1f5f9; }
         .month-select-btn.selected { background: #3b82f6; color: white; border-color: #2563eb; }
 
-        #loading {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999;
-            display: none; justify-content: center; align-items: center; color: white;
-            flex-direction: column; font-size: 16px; backdrop-filter: blur(4px);
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6;
-            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
+        #loading { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; font-size: 16px; backdrop-filter: blur(4px); }
+        .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* 列印/PDF 專用 */
         @media print {
             @page { size: A3 landscape; margin: 5mm; }
             body { background: white; height: auto; overflow: visible; display: block !important; }
-            #sidebar, .top-bar, .btn-add-row, .del-btn, .btn-calendar, #loading, #csvInput, #toolbar-container, .mobile-header { display: none !important; }
-            .main-content, .workspace, .view-section, .table-container {
-                width: 100%; height: auto; overflow: visible; display: block;
-                padding: 0; margin: 0; border: none; box-shadow: none;
-            }
+            #sidebar, .top-bar, .btn-add-row, .del-btn, .btn-calendar, #loading, #csvInput, #toolbar-container, .mobile-header, #yearSelectorContainer { display: none !important; }
+            .main-content, .workspace, .view-section, .table-container { width: 100%; height: auto; overflow: visible; display: block; padding: 0; margin: 0; border: none; box-shadow: none; }
             .view-section { display: none; }
             .view-section.active { display: block; }
-
-            /* 強制列印時也鎖定寬度 */
             #table4 { width: 1232px !important; min-width: 1232px !important; table-layout: fixed !important; }
             .col-fix-name { width: 300px !important; }
             .col-fix-day { width: 30px !important; padding: 0 !important; }
@@ -278,7 +193,7 @@
         <div id="loadText">處理中...</div>
     </div>
 
-    <!-- Modal: 排除日期 -->
+    <!-- Modal 區域 (日期 & 列印) -->
     <div id="dateModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
             <h3 class="font-bold text-lg mb-2 text-slate-800">排除日期</h3>
@@ -297,7 +212,6 @@
         </div>
     </div>
 
-    <!-- Modal: 列印月份選擇 -->
     <div id="printModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
             <h3 class="font-bold text-lg mb-2 text-slate-800">請選擇輸出月份</h3>
@@ -365,6 +279,15 @@
         <div id="toolbar-container" class="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm z-10">
             <div class="text-lg font-bold text-slate-800 hidden md:flex items-center gap-2" id="pageTitle">
                 <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 附件1 - 消防人員
+            </div>
+            <!-- 年份選擇器 (新增) -->
+            <div id="yearSelectorContainer" class="hidden flex items-center gap-2">
+                <span class="text-sm font-bold text-slate-600">年度:</span>
+                <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 font-bold">
+                    <option value="2024">113年 (2024)</option>
+                    <option value="2025" selected>114年 (2025)</option>
+                    <option value="2026">115年 (2026)</option>
+                </select>
             </div>
             <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" id="toolbar"></div>
         </div>
@@ -444,8 +367,8 @@
             <!-- VIEW 4: 甘特圖 -->
             <div id="view4" class="view-section hidden h-full flex flex-col">
                 <div class="bg-amber-50 text-amber-800 px-4 py-3 rounded-xl border border-amber-200 text-sm mb-4 flex items-center gap-2 shadow-sm">
-                    <i class="ri-error-warning-fill text-lg text-amber-500"></i>
-                    <span><strong>說明：</strong> 統計包含附件1~3所有人數。每日統計即使為 0 也會顯示。請下載 PDF 存檔。</span>
+                    <i class="ri-calendar-event-line text-lg text-amber-500"></i>
+                    <span><strong>說明：</strong> 紅色底色代表國定假日或週末。資料來源：行政院行事曆(透過 Google 日曆)。</span>
                 </div>
                 <div class="table-container flex-1 p-4 bg-white">
                     <div id="ganttExportArea">
@@ -467,6 +390,10 @@
         let d2 = [{ m: '1', unit: '', name: '', date: '', inst: 0, ex: [], isNew: true }];
         let d3 = [{ unit: '', name: '', date: '', mp: 0, ex: [], isNew: true }];
         let currentTab = 1; let printActionType = '';
+        
+        // 年份與假日設定
+        let currentYear = 2025; 
+        let holidays = {}; // 儲存 '2025-1-1': true
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -475,91 +402,48 @@
             sidebar.classList.toggle('h-full');
         }
 
-        window.onload = function () { updateToolbar(); loadData(); };
+        window.onload = function () { 
+            updateToolbar(); 
+            loadData(); 
+            // 啟動時先抓一次假日
+            fetchHolidays(currentYear);
+        };
 
-        // =========================================
-        // 新增與刪除功能 (已補回)
-        // =========================================
-        function addRow(t) {
-            if (t === 1) d1.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', mp: 0, ext: false, nt: '', kl: '', ty: '', yl: '', note: '', ex: [], isNew: true });
-            if (t === 2) d2.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', inst: 0, ext: false, note: '', ex: [], isNew: true });
-            if (t === 3) d3.push({ unit: '', name: '', target: '', date: '', days: '', hours: '', mp: 0, loc: '', ex: [], isNew: true });
-            
-            if (t === 1) renderT1();
-            if (t === 2) renderT2();
-            if (t === 3) renderT3();
-        }
-
-        function delRow(t, i) {
-            if(!confirm("確定刪除此列？")) return;
-            if (t === 1) d1.splice(i, 1);
-            if (t === 2) d2.splice(i, 1);
-            if (t === 3) d3.splice(i, 1);
-            
-            if (t === 1) renderT1();
-            if (t === 2) renderT2();
-            if (t === 3) renderT3();
-        }
-
-        // =========================================
-        // CSV 匯入與範本 (已補回)
-        // =========================================
-        function downloadCSVTemplate() {
-            let csvContent = "\uFEFF"; // UTF-8 BOM
-            if (currentTab === 1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
-            else if (currentTab === 2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
-            else if (currentTab === 3) csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            saveAs(blob, `附件${currentTab}_範本.csv`);
-        }
-
-        function processCSV(input) {
-            if (!input.files[0]) return;
-            const file = input.files[0];
-            
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function (results) {
-                    const data = results.data;
-                    if (currentTab === 1) {
-                        data.forEach(r => {
-                            d1.push({
-                                m: r['月份'] || '', unit: r['承辦單位'] || '', name: r['課程名稱'] || '', target: r['訓練對象'] || '',
-                                date: r['課程日期'] || '', loc: r['上課地點'] || '', batch: r['梯數'] || '', pb: r['每梯人數'] || '',
-                                dHour: r['每天時數'] || '', bHour: r['每梯時數'] || '', mp: r['預計調用人數'] || '',
-                                ext: (r['是否提供跨縣市(TRUE/FALSE)'] || '').toUpperCase() === 'TRUE',
-                                nt: r['新北'] || '', kl: r['基隆'] || '', ty: r['桃園'] || '', yl: r['宜蘭'] || '', note: r['備註'] || '',
-                                ex: [], isNew: true
-                            });
-                        });
-                        renderT1();
-                    } else if (currentTab === 2) {
-                        data.forEach(r => {
-                            d2.push({
-                                m: r['月份'] || '', unit: r['承辦單位'] || '', name: r['課程名稱'] || '', target: r['訓練對象'] || '',
-                                date: r['課程日期'] || '', loc: r['上課地點'] || '', batch: r['梯數'] || '', pb: r['每梯人數'] || '',
-                                dHour: r['每天時數'] || '', bHour: r['每梯時數'] || '', inst: r['調用教官人數'] || '',
-                                ext: (r['是否提供跨縣市(TRUE/FALSE)'] || '').toUpperCase() === 'TRUE', note: r['備註'] || '',
-                                ex: [], isNew: true
-                            });
-                        });
-                        renderT2();
-                    } else if (currentTab === 3) {
-                        data.forEach(r => {
-                            d3.push({
-                                unit: r['承辦單位'] || '', name: r['活動名稱'] || '', target: r['參加對象'] || '',
-                                date: r['日期'] || '', days: r['天數'] || '', hours: r['時數'] || '', mp: r['每日調用人數'] || '',
-                                loc: r['地點'] || '', ex: [], isNew: true
-                            });
-                        });
-                        renderT3();
-                    }
-                    input.value = '';
-                    alert("匯入完成");
-                }
+        // 切換年份
+        function changeYear(val) {
+            currentYear = parseInt(val);
+            currentCalendarMonth = 1; // 重置日曆到1月
+            showLoading(true, `正在載入 ${currentYear} 年資料...`);
+            fetchHolidays(currentYear).then(() => {
+                if(currentTab === 4) renderGantt(); // 重繪甘特圖
+                showLoading(false);
             });
+        }
+
+        // 抓取假日
+        async function fetchHolidays(year) {
+            if (GAS_API_URL.includes("請填入")) return;
+            try {
+                // 呼叫 GAS 取得假日
+                const res = await fetch(`${GAS_API_URL}?type=holidays&year=${year}`);
+                const json = await res.json();
+                if(json.status === 'success') {
+                    holidays = json.holidays; // 更新假日快取
+                }
+            } catch(e) {
+                console.error("無法取得假日", e);
+            }
+        }
+
+        // 判斷是否為假日 (六日 OR 國定假日)
+        function isDayOff(year, month, day) {
+            const dateStr = `${year}-${month}-${day}`;
+            const w = new Date(year, month - 1, day).getDay();
+            // 如果是國定假日 -> true
+            if (holidays[dateStr]) return true;
+            // 如果是六日 -> true (除非以後要處理補班日，目前先單純化)
+            if (w === 0 || w === 6) return true;
+            return false;
         }
 
         function loadData() {
@@ -595,6 +479,14 @@
             const titles = ["附件1 - 消防人員", "附件2 - 非消防人員", "附件3 - 重大活動", "甘特圖"];
             document.getElementById('pageTitle').innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> ${titles[idx - 1]}`;
             document.getElementById('mobilePageTitle').innerText = titles[idx - 1].replace(/附件\d - /, '');
+            
+            // 只有甘特圖頁面顯示年份選單
+            if (idx === 4) {
+                document.getElementById('yearSelectorContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('yearSelectorContainer').classList.add('hidden');
+            }
+
             updateToolbar();
             if (idx === 4) renderGantt();
         }
@@ -624,83 +516,62 @@
 
         function renderAll() { renderT1(); renderT2(); renderT3(); }
 
-        function renderT1() {
-            const tb = document.getElementById('tbody1'); tb.innerHTML = '';
-            d1.forEach((r, i) => {
-                tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(1,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
-                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
-                <td><input type="text" id="m_1_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
-                <td><input type="text" value="${r.unit || ''}" onchange="d1[${i}].unit=this.value"></td>
-                <td class="align-left"><textarea onchange="d1[${i}].name=this.value">${r.name || ''}</textarea></td>
-                <td><input type="text" value="${r.target || ''}" onchange="d1[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(1,${i},this.value)" placeholder="1/6-19"><button class="btn-calendar" onclick="openDateModal(1,${i})"><i class="ri-calendar-line"></i></button></div></td>
-                <td><input type="text" value="${r.loc || ''}" onchange="d1[${i}].loc=this.value"></td>
-                <td><input type="number" value="${r.batch || ''}" onchange="d1[${i}].batch=this.value"></td>
-                <td><input type="number" value="${r.pb || ''}" onchange="d1[${i}].pb=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
-                <td><input type="number" value="${r.dHour || ''}" onchange="d1[${i}].dHour=this.value"></td>
-                <td><input type="number" value="${r.bh || ''}" onchange="d1[${i}].bh=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bh) || 0}</td>
-                <td class="col-blue-light"><input type="number" value="${r.mp || ''}" onchange="d1[${i}].mp=this.value"></td>
-                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d1[${i}].ext=this.checked"></td>
-                <td><input type="number" value="${r.nt || ''}" onchange="d1[${i}].nt=this.value"></td>
-                <td><input type="number" value="${r.kl || ''}" onchange="d1[${i}].kl=this.value"></td>
-                <td><input type="number" value="${r.ty || ''}" onchange="d1[${i}].ty=this.value"></td>
-                <td><input type="number" value="${r.yl || ''}" onchange="d1[${i}].yl=this.value"></td>
-                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d1[${i}].note=this.value"></td>
-                </tr>`;
-            });
+        // =========================================
+        // 新增與刪除功能
+        // =========================================
+        function addRow(t) {
+            if (t === 1) d1.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', mp: 0, ext: false, nt: '', kl: '', ty: '', yl: '', note: '', ex: [], isNew: true });
+            if (t === 2) d2.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', inst: 0, ext: false, note: '', ex: [], isNew: true });
+            if (t === 3) d3.push({ unit: '', name: '', target: '', date: '', days: '', hours: '', mp: 0, loc: '', ex: [], isNew: true });
+            if (t === 1) renderT1(); if (t === 2) renderT2(); if (t === 3) renderT3();
         }
-        function renderT2() {
-            const tb = document.getElementById('tbody2'); tb.innerHTML = '';
-            d2.forEach((r, i) => {
-                tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(2,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
-                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
-                <td><input type="text" id="m_2_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
-                <td><input type="text" value="${r.unit || ''}" onchange="d2[${i}].unit=this.value"></td>
-                <td class="align-left"><textarea onchange="d2[${i}].name=this.value">${r.name || ''}</textarea></td>
-                <td><input type="text" value="${r.target || ''}" onchange="d2[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(2,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(2,${i})"><i class="ri-calendar-line"></i></button></div></td>
-                <td><input type="text" value="${r.loc || ''}" onchange="d2[${i}].loc=this.value"></td>
-                <td><input type="number" value="${r.batch || ''}" onchange="d2[${i}].batch=this.value"></td>
-                <td><input type="number" value="${r.pb || ''}" onchange="d2[${i}].pb=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
-                <td><input type="number" value="${r.dHour || ''}" onchange="d2[${i}].dHour=this.value"></td>
-                <td><input type="number" value="${r.bHour || ''}" onchange="d2[${i}].bHour=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bHour) || 0}</td>
-                <td><input type="number" value="${r.inst || ''}" onchange="d2[${i}].inst=this.value"></td>
-                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d2[${i}].ext=this.checked"></td>
-                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d2[${i}].note=this.value"></td>
-                </tr>`;
-            });
+
+        function delRow(t, i) {
+            if(!confirm("確定刪除此列？")) return;
+            if (t === 1) d1.splice(i, 1); if (t === 2) d2.splice(i, 1); if (t === 3) d3.splice(i, 1);
+            if (t === 1) renderT1(); if (t === 2) renderT2(); if (t === 3) renderT3();
         }
-        function renderT3() {
-            const tb = document.getElementById('tbody3'); tb.innerHTML = '';
-            d3.forEach((r, i) => {
-                tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(3,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
-                <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
-                <td><input type="text" value="${r.unit || ''}" onchange="d3[${i}].unit=this.value"></td>
-                <td class="align-left"><textarea onchange="d3[${i}].name=this.value">${r.name || ''}</textarea></td>
-                <td><input type="text" value="${r.target || ''}" onchange="d3[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(3,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(3,${i})"><i class="ri-calendar-line"></i></button></div></td>
-                <td><input type="number" value="${r.days || ''}" onchange="d3[${i}].days=this.value"></td>
-                <td><input type="number" value="${r.hours || ''}" onchange="d3[${i}].hours=this.value"></td>
-                <td class="col-red-light"><input type="number" value="${r.mp || ''}" onchange="d3[${i}].mp=this.value"></td>
-                <td class="align-left"><input type="text" value="${r.loc || ''}" onchange="d3[${i}].loc=this.value"></td>
-                </tr>`;
+
+        // =========================================
+        // CSV 匯入與範本
+        // =========================================
+        function downloadCSVTemplate() {
+            let csvContent = "\uFEFF"; 
+            if (currentTab === 1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
+            else if (currentTab === 2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
+            else if (currentTab === 3) csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            saveAs(blob, `附件${currentTab}_範本.csv`);
+        }
+
+        function processCSV(input) {
+            if (!input.files[0]) return;
+            const file = input.files[0];
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: function (results) {
+                    const data = results.data;
+                    if (currentTab === 1) {
+                        data.forEach(r => { d1.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', mp: r['預計調用人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', nt: r['新北']||'', kl: r['基隆']||'', ty: r['桃園']||'', yl: r['宜蘭']||'', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT1();
+                    } else if (currentTab === 2) {
+                        data.forEach(r => { d2.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', inst: r['調用教官人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT2();
+                    } else if (currentTab === 3) {
+                        data.forEach(r => { d3.push({ unit: r['承辦單位']||'', name: r['活動名稱']||'', target: r['參加對象']||'', date: r['日期']||'', days: r['天數']||'', hours: r['時數']||'', mp: r['每日調用人數']||'', loc: r['地點']||'', ex: [], isNew: true }); });
+                        renderT3();
+                    }
+                    input.value = ''; alert("匯入完成");
+                }
             });
         }
 
-        // --- Gantt Chart Rendering (修正版：加入 colgroup 解決對齊) ---
+        // --- 甘特圖 (升級版：支援年份與假日) ---
         function renderGantt() {
             const table = document.getElementById('table4');
             const container = document.getElementById('ganttContainer');
             
-            // 1. 強制重置表格結構：加入 colgroup
-            let headerHTML = '<tr id="ganttHeader"><th class="col-fix-name">班期 / 活動名稱</th>';
+            let headerHTML = `<tr id="ganttHeader"><th class="col-fix-name">${currentYear}年 班期 / 活動名稱</th>`;
             for (let i = 1; i <= 31; i++) headerHTML += `<th class="col-fix-day">${i}</th>`;
             headerHTML += '</tr>';
 
@@ -714,7 +585,6 @@
             `;
 
             const newContainer = document.getElementById('ganttContainer');
-
             let rows = [];
             const parse = (r) => parseDateStr(r.date, r.ex);
 
@@ -740,109 +610,101 @@
                 let tbody = document.createElement('tbody');
                 tbody.className = 'gantt-month-group';
                 tbody.id = `month-${m}`;
-                
                 let html = `<tr class="gantt-month-header"><td colspan="32">${m} 月份</td></tr>`;
                 let sum = Array(32).fill(0);
 
                 grp[m].forEach(r => {
-                    let row1 = `<tr class="gantt-visual-row">
-                        <td class="col-fix-name" rowspan="2">${r.n}</td>`;
-
+                    let row1 = `<tr class="gantt-visual-row"><td class="col-fix-name" rowspan="2">${r.n}</td>`;
                     let row2 = `<tr class="gantt-data-row">`;
 
                     for (let i = 1; i <= 31; i++) {
                         let act = r.ds.includes(i);
-                        let w = new Date(2025, m - 1, i).getDay();
-                        let wkCls = (w === 0 || w === 6) ? 'weekend' : '';
+                        
+                        // 判斷是否為假日 (使用 currentYear 與 holidays)
+                        let isHoliday = isDayOff(currentYear, m, i);
+                        let wkCls = isHoliday ? (holidays[`${currentYear}-${m}-${i}`] ? 'holiday-red' : 'weekend') : '';
 
                         let val = parseInt(r.v);
                         if (isNaN(val)) val = 0;
                         if (act) sum[i] += val;
 
                         let vShow = '';
-                        if (act && r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0')) {
-                            vShow = r.v;
-                        }
+                        if (act && r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0')) vShow = r.v;
 
                         row1 += `<td class="col-fix-day gantt-cell-bar ${wkCls} ${act ? 'bar-active' : ''}"></td>`;
                         row2 += `<td class="col-fix-day gantt-num ${wkCls}">${vShow}</td>`;
                     }
-                    row1 += '</tr>';
-                    row2 += '</tr>';
+                    row1 += '</tr>'; row2 += '</tr>';
                     html += row1 + row2;
                 });
 
                 let sRow = `<tr class="stats-row"><td class="col-fix-name" style="text-align:center;">每日統計</td>`;
                 for (let i = 1; i <= 31; i++) sRow += `<td class="col-fix-day">${sum[i]}</td>`;
                 html += sRow + '</tr>';
-                
                 tbody.innerHTML = html;
                 newContainer.appendChild(tbody);
             }
         }
 
-        // 全域變數
+        // 全域變數 & Modal
         let currentEdit = null;
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
 
-        // Modal 相關
         function openDateModal(t, i) {
             currentEdit = { t, i };
             const val = t === 1 ? d1[i].date : t === 2 ? d2[i].date : d3[i].date;
             selectedDates.clear();
-
             const parsed = parseDateStr(val);
             parsed.forEach(o => selectedDates.add(`${o.m}-${o.d}`));
-
             if (parsed.length > 0) currentCalendarMonth = parsed[0].m;
             else currentCalendarMonth = 1;
-
             renderCalendar();
             document.getElementById('dateModal').classList.remove('hidden');
             document.getElementById('dateModal').classList.add('flex');
         }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
+            
+            // 標題顯示當前年份
+            const header = document.createElement('div');
+            header.className = "col-span-7 flex justify-between items-center mb-2";
+            header.innerHTML = `
+                <button onclick="changeMonth(-1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-left-s-line"></i></button>
+                <span class="font-bold text-lg">${currentYear}年 ${currentCalendarMonth} 月</span>
+                <button onclick="changeMonth(1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-right-s-line"></i></button>
+            `;
+            grid.appendChild(header);
+
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             weekDays.forEach(d => grid.innerHTML += `<div class="text-center text-xs font-bold text-slate-500 py-1">${d}</div>`);
             
-            const daysInMonth = new Date(2025, currentCalendarMonth, 0).getDate();
-            const firstDay = new Date(2025, currentCalendarMonth - 1, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentCalendarMonth, 0).getDate();
+            const firstDay = new Date(currentYear, currentCalendarMonth - 1, 1).getDay();
 
             for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const key = `${currentCalendarMonth}-${d}`;
                 const isActive = selectedDates.has(key);
+                
+                // 判斷假日 (用 currentYear)
+                const isHoliday = isDayOff(currentYear, currentCalendarMonth, d);
+                const holidayClass = isHoliday ? (holidays[`${currentYear}-${currentCalendarMonth}-${d}`] ? 'text-red-600 font-bold bg-red-50 border-red-200' : 'text-red-500 bg-slate-50') : '';
+
                 const btn = document.createElement('div');
-                btn.className = `day-btn ${isActive ? 'active' : ''}`;
+                btn.className = `day-btn ${isActive ? 'active' : ''} ${holidayClass}`;
                 btn.innerText = d;
                 btn.onclick = () => {
-                    if (selectedDates.has(key)) selectedDates.delete(key);
-                    else selectedDates.add(key);
-                    renderCalendar();
-                    updateModalRangeText();
+                    if (selectedDates.has(key)) selectedDates.delete(key); else selectedDates.add(key);
+                    renderCalendar(); updateModalRangeText();
                 };
                 grid.appendChild(btn);
             }
-
-            const header = document.createElement('div');
-            header.className = "col-span-7 flex justify-between items-center mb-2";
-            header.innerHTML = `
-                <button onclick="changeMonth(-1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-left-s-line"></i></button>
-                <span class="font-bold text-lg">${currentCalendarMonth} 月</span>
-                <button onclick="changeMonth(1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-right-s-line"></i></button>
-            `;
-            grid.insertBefore(header, grid.firstChild);
-            updateModalRangeText();
         }
 
         function changeMonth(delta) {
@@ -852,21 +714,17 @@
             renderCalendar();
         }
 
-        function updateModalRangeText() {
-            document.getElementById('modalRangeText').innerText = `已選取 ${selectedDates.size} 天`;
-        }
+        function updateModalRangeText() { document.getElementById('modalRangeText').innerText = `已選取 ${selectedDates.size} 天`; }
 
         function applyDateFilter(type) {
-            const daysInMonth = new Date(2025, currentCalendarMonth, 0).getDate();
+            const daysInMonth = new Date(currentYear, currentCalendarMonth, 0).getDate();
             for (let d = 1; d <= daysInMonth; d++) {
                 const key = `${currentCalendarMonth}-${d}`;
-                const week = new Date(2025, currentCalendarMonth - 1, d).getDay();
-                const isWeekend = (week === 0 || week === 6);
-
+                const isHoliday = isDayOff(currentYear, currentCalendarMonth, d); // 包含六日與國定
                 if (type === 'all') selectedDates.add(key);
                 else if (type === 'clear') selectedDates.delete(key);
-                else if (type === 'no-weekend') { if (!isWeekend) selectedDates.add(key); else selectedDates.delete(key); }
-                else if (type === 'only-weekend') { if (isWeekend) selectedDates.add(key); else selectedDates.delete(key); }
+                else if (type === 'no-weekend') { if (!isHoliday) selectedDates.add(key); else selectedDates.delete(key); }
+                else if (type === 'only-weekend') { if (isHoliday) selectedDates.add(key); else selectedDates.delete(key); }
             }
             renderCalendar();
         }
@@ -874,113 +732,75 @@
         function saveDateModal() {
             if (!currentEdit) return;
             const sorted = [...selectedDates].map(s => {
-                const [m, d] = s.split('-').map(Number);
-                return { m, d, val: m * 100 + d };
+                const [m, d] = s.split('-').map(Number); return { m, d, val: m * 100 + d };
             }).sort((a, b) => a.val - b.val);
 
             let str = "";
             if (sorted.length > 0) {
-                let groups = {};
-                sorted.forEach(o => { if (!groups[o.m]) groups[o.m] = []; groups[o.m].push(o.d); });
+                let groups = {}; sorted.forEach(o => { if (!groups[o.m]) groups[o.m] = []; groups[o.m].push(o.d); });
                 let parts = [];
                 for (let m in groups) {
                     let days = groups[m];
-                    let ranges = [];
-                    let start = days[0], prev = days[0];
+                    let ranges = []; let start = days[0], prev = days[0];
                     for (let i = 1; i < days.length; i++) {
                         if (days[i] === prev + 1) prev = days[i];
-                        else {
-                            ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
-                            start = days[i]; prev = days[i];
-                        }
+                        else { ranges.push(start === prev ? `${start}` : `${start}-${prev}`); start = days[i]; prev = days[i]; }
                     }
                     ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
                     parts.push(`${m}/${ranges.join('、')}`);
                 }
                 str = parts.join(', ');
             }
-
             const { t, i } = currentEdit;
-            if (t === 1) d1[i].date = str;
-            if (t === 2) d2[i].date = str;
-            if (t === 3) d3[i].date = str;
-            updateMonthFromDate(t, i, str);
-            renderAll();
-            closeModal('dateModal');
+            if (t === 1) d1[i].date = str; if (t === 2) d2[i].date = str; if (t === 3) d3[i].date = str;
+            updateMonthFromDate(t, i, str); renderAll(); closeModal('dateModal');
         }
 
         function openPrintModal(type) {
             printActionType = type;
-            const grid = document.getElementById('printMonthGrid');
-            grid.innerHTML = '';
-            for (let i = 1; i <= 12; i++) {
-                grid.innerHTML += `<div class="month-select-btn selected" onclick="this.classList.toggle('selected')" data-m="${i}">${i}月</div>`;
-            }
-            document.getElementById('printModal').classList.remove('hidden');
-            document.getElementById('printModal').classList.add('flex');
+            const grid = document.getElementById('printMonthGrid'); grid.innerHTML = '';
+            for (let i = 1; i <= 12; i++) grid.innerHTML += `<div class="month-select-btn selected" onclick="this.classList.toggle('selected')" data-m="${i}">${i}月</div>`;
+            document.getElementById('printModal').classList.remove('hidden'); document.getElementById('printModal').classList.add('flex');
         }
 
         function toggleAllMonths() {
             const btns = document.querySelectorAll('.month-select-btn');
             const allSelected = [...btns].every(b => b.classList.contains('selected'));
-            btns.forEach(b => {
-                if (allSelected) b.classList.remove('selected');
-                else b.classList.add('selected');
-            });
+            btns.forEach(b => { if (allSelected) b.classList.remove('selected'); else b.classList.add('selected'); });
         }
 
         function executePrintOrExport() {
             const selected = [...document.querySelectorAll('.month-select-btn.selected')].map(b => parseInt(b.dataset.m));
             if (selected.length === 0) return alert("請至少選擇一個月份");
             closeModal('printModal');
-            if (printActionType === 'excel') exportExcelJS(selected);
-            else if (printActionType === 'download') downloadPDF(selected);
+            if (printActionType === 'excel') exportExcelJS(selected); else if (printActionType === 'download') downloadPDF(selected);
         }
 
-        // 增強版 parseDateStr
         function parseDateStr(str, excludeList) {
-            let results = [];
-            if (!str) return results;
+            let results = []; if (!str) return results;
             try {
-                let s = str.trim()
-                    .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
-                    .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
-                    .replace(/／/g, '/').replace(/～/g, '-').replace(/~/g, '-').replace(/－/g, '-')
-                    .trim();
-
+                let s = str.trim().replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d)).replace(/（.*?）/g, '').replace(/\(.*?\)/g, '').replace(/／/g, '/').replace(/～/g, '-').replace(/~/g, '-').replace(/－/g, '-').trim();
                 let parts = s.split(/[,、，\s]+/);
-
                 parts.forEach(part => {
-                    part = part.trim();
-                    if (!part) return;
+                    part = part.trim(); if (!part) return;
                     part = part.replace(/^(\d{2,4})\//, ''); // 移除年份
-
                     let cross = part.match(/(\d+)[\/\.](\d+)\s*[-]\s*(\d+)[\/\.](\d+)/);
                     if (cross) {
                         let m1 = +cross[1], d1 = +cross[2], m2 = +cross[3], d2 = +cross[4];
-                        let cur = new Date(2025, m1 - 1, d1), end = new Date(2025, m2 - 1, d2);
-                        if (cur <= end) {
-                            while (cur <= end) {
-                                results.push({ m: cur.getMonth() + 1, d: cur.getDate() });
-                                cur.setDate(cur.getDate() + 1);
-                            }
-                        }
+                        let cur = new Date(currentYear, m1 - 1, d1), end = new Date(currentYear, m2 - 1, d2); // 使用 currentYear
+                        if (cur <= end) { while (cur <= end) { results.push({ m: cur.getMonth() + 1, d: cur.getDate() }); cur.setDate(cur.getDate() + 1); } }
                         return;
                     }
-
                     let rng = part.match(/(\d+)[\/\.](\d+)\s*[-]\s*(\d+)/);
                     if (rng) {
                         let m = +rng[1], d1 = +rng[2], d2 = +rng[3];
                         if (d2 >= d1) { for (let i = d1; i <= d2; i++) results.push({ m: m, d: i }); }
                         return;
                     }
-
                     let sgl = part.match(/(\d+)[\/\.](\d+)/);
                     if (sgl) { results.push({ m: +sgl[1], d: +sgl[2] }); }
                 });
-
                 if (excludeList && excludeList.length > 0) results = results.filter(o => !excludeList.includes(o.d));
-
             } catch (e) { console.error("日期解析失敗:", e); }
             return results;
         }
@@ -990,57 +810,21 @@
             const container = document.querySelector('.table-container');
             const originalOverflow = container.style.overflow;
             const originalWidth = container.style.width;
-
-            if (selectedMonths) {
-                for (let m = 1; m <= 12; m++) {
-                    const tb = document.getElementById(`month-${m}`);
-                    if (tb) {
-                        if (selectedMonths.includes(m)) tb.style.display = 'table-header-group';
-                        else tb.style.display = 'none';
-                    }
-                }
-            }
-
-            container.style.overflow = 'visible';
-            // 配合 CSS 的固定寬度
-            container.style.width = '1232px';
-
-            const opt = {
-                margin: 5,
-                filename: '甘特圖報表.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, scrollY: 0, useCORS: true, width: 1232 },
-                jsPDF: { unit: 'pt', format: 'a3', orientation: 'landscape' }
-            };
-
+            if (selectedMonths) { for (let m = 1; m <= 12; m++) { const tb = document.getElementById(`month-${m}`); if (tb) { if (selectedMonths.includes(m)) tb.style.display = 'table-header-group'; else tb.style.display = 'none'; } } }
+            container.style.overflow = 'visible'; container.style.width = '1232px';
+            const opt = { margin: 5, filename: '甘特圖報表.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, scrollY: 0, useCORS: true, width: 1232 }, jsPDF: { unit: 'pt', format: 'a3', orientation: 'landscape' } };
             showLoading(true, "正在產生 PDF...");
-
-            html2pdf().set(opt).from(element).save()
-                .then(() => {
-                    container.style.overflow = originalOverflow;
-                    container.style.width = originalWidth;
-                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                    showLoading(false);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("PDF 產生失敗，請稍後再試");
-                    container.style.overflow = originalOverflow;
-                    container.style.width = originalWidth;
-                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                    showLoading(false);
-                });
+            html2pdf().set(opt).from(element).save().then(() => { container.style.overflow = originalOverflow; container.style.width = originalWidth; for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; } showLoading(false); }).catch(err => { console.error(err); alert("PDF 產生失敗"); container.style.overflow = originalOverflow; container.style.width = originalWidth; for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; } showLoading(false); });
         }
 
         async function exportExcelJS(selM) {
             const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('甘特圖');
             sh.getColumn(1).width = 50; for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
-            sh.addRow(["班期 / 活動名稱", ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
+            sh.addRow([`${currentYear}年 班期 / 活動名稱`, ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
             let rows = []; const parse = (r) => parseDateStr(r.date, r.ex);
             const add = (r, val, pre) => { let ds = parse(r), ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b); ms.forEach(m => { rows.push({ m: m, n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`, ds: ds.filter(o => o.m == m).map(o => o.d), v: val }); }); };
             d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') }); d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官') }); d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') });
             let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
-
             selM.forEach(m => {
                 if (grp[m].length === 0) return;
                 let mt = sh.addRow([`${m} 月份`]); mt.font = { bold: true, size: 12 }; mt.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFe2e8f0' } };
@@ -1048,13 +832,7 @@
                 grp[m].forEach(r => {
                     let dVis = [r.n], dDat = [""];
                     for (let i = 1; i <= 31; i++) {
-                        if (r.ds.includes(i)) {
-                            dVis.push("");
-                            let vShow = "";
-                            if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) { vShow = parseInt(r.v); }
-                            dDat.push(vShow);
-                            sum[i] += parseInt(r.v) || 0;
-                        } else { dVis.push(""); dDat.push(""); }
+                        if (r.ds.includes(i)) { dVis.push(""); let vShow = ""; if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0')) vShow = parseInt(r.v); dDat.push(vShow); sum[i] += parseInt(r.v) || 0; } else { dVis.push(""); dDat.push(""); }
                     }
                     let rVis = sh.addRow(dVis); let rDat = sh.addRow(dDat);
                     rVis.eachCell((c, col) => { c.border = { right: { style: 'thin' } }; if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3b82f6' } }; });
