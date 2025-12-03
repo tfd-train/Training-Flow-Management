@@ -18,7 +18,7 @@
 
     <script>
         // ==========================================
-        // ⚠️ 1. 系統連結 (維持雲端連動)
+        // ⚠️ 1. 系統連結
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
 
         // ⚠️ 2. 系統整合連結
@@ -101,6 +101,7 @@
     <!-- Modal 區域 -->
     <div id="dateModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
+            <!-- 這裡改回方案 A：箭頭切換 -->
             <div class="flex justify-between items-center mb-2">
                 <h3 class="font-bold text-lg text-slate-800">選擇日期</h3>
                 <select id="pickerYearSelect" onchange="changePickerYear(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded p-1 font-bold">
@@ -416,8 +417,10 @@
         }
 
         function showLoading(s, t) { 
-            const ld = document.getElementById('loading'); if(ld) ld.style.display = s ? 'flex' : 'none'; 
-            const txt = document.getElementById('loadText'); if(txt && t) txt.innerText = t; 
+            const ld = document.getElementById('loading');
+            if(ld) ld.style.display = s ? 'flex' : 'none'; 
+            const txt = document.getElementById('loadText');
+            if(txt && t) txt.innerText = t; 
         }
 
         // === 雲端存取 (恢復) ===
@@ -737,6 +740,7 @@
 
             showLoading(true, "正在產生 PDF...");
 
+            // 給一點時間讓瀏覽器渲染
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save()
                 .then(() => {
@@ -744,6 +748,7 @@
                     container.style.width = originalWidth;
                     for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
                     showLoading(false);
+                    // 下載完切回原本的分頁
                     if(originalTab !== 4) switchTab(originalTab);
                 })
                 .catch(err => {
@@ -835,13 +840,34 @@
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
+            
+            // 1. 標題區 (含年份切換、左右月)
+            const header = document.createElement('div');
+            header.className = "col-span-7 flex justify-between items-center mb-2";
+            // 注意：這裡 pickerYear 顯示民國年
+            header.innerHTML = `
+                <button onclick="changeMonth(-1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-left-s-line"></i></button>
+                <span class="font-bold text-lg text-blue-600">${pickerYear-1911}年 ${currentCalendarMonth} 月</span>
+                <button onclick="changeMonth(1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-right-s-line"></i></button>
+            `;
+            grid.appendChild(header);
+
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-            weekDays.forEach(d => grid.innerHTML += `<div class="text-center text-xs font-bold text-slate-500 py-1">${d}</div>`);
+            weekDays.forEach(d => {
+                const div = document.createElement('div');
+                div.className = "text-center text-xs font-bold text-slate-500 py-1";
+                div.innerText = d;
+                grid.appendChild(div);
+            });
             
             const daysInMonth = new Date(pickerYear, currentCalendarMonth, 0).getDate();
             const firstDay = new Date(pickerYear, currentCalendarMonth - 1, 1).getDay();
 
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                grid.appendChild(empty);
+            }
+
             for (let d = 1; d <= daysInMonth; d++) {
                 const key = `${currentCalendarMonth}-${d}`;
                 const isActive = selectedDates.has(key);
@@ -864,7 +890,9 @@
             currentCalendarMonth += delta;
             if (currentCalendarMonth < 1) { currentCalendarMonth = 12; pickerYear--; }
             if (currentCalendarMonth > 12) { currentCalendarMonth = 1; pickerYear++; }
-            document.getElementById('pickerYearSelect').value = pickerYear;
+            // 同步更新上方年份選單
+            const yearSel = document.getElementById('pickerYearSelect');
+            if(yearSel) yearSel.value = pickerYear;
             renderCalendar();
         }
 
