@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>訓練流路管理系統</title>
 
-    <!-- 核心工具庫 -->
+    <!-- 核心工具庫 (確保載入順序) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -17,31 +17,25 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <script>
-        // ==========================================
-        // ⚠️ 1. 系統連結
+        // 1. 系統連結
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
-
-        // ⚠️ 2. 系統整合連結
         const PORTAL_URL = "https://tfd-train.github.io/Training-Management-Platform/";
         const OTHER_SYSTEM_URL = "https://tfd-train.github.io/Facility-Booking/";
-        // ==========================================
     </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
         .table-container { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
         table { border-collapse: collapse; font-size: 13px; table-layout: fixed; width: auto; border-spacing: 0; }
-        #table1 { min-width: 2000px; }
-        #table2 { min-width: 1800px; }
+        #table1 { min-width: 2000px; } #table2 { min-width: 1800px; }
         td { border: 1px solid #cbd5e1; height: auto; min-height: 38px; background: white; padding: 0; vertical-align: middle; }
         input[type="text"], input[type="number"] { width: 100%; height: 38px; border: none; outline: none; background: transparent; text-align: center; font-family: inherit; font-size: 13px; display: block; color: #334155; }
         input:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
         textarea { width: 100%; min-height: 38px; height: 100%; border: none; resize: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; text-align: left; padding: 8px; box-sizing: border-box; line-height: 1.4; }
         textarea:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
-
-        /* 甘特圖 CSS - 強力對齊 */
+        
+        /* 甘特圖 CSS */
         #table4 { width: 1232px !important; min-width: 1232px !important; max-width: 1232px !important; table-layout: fixed !important; border-collapse: collapse; margin: 0; }
         .col-fix-name { width: 300px !important; min-width: 300px !important; max-width: 300px !important; white-space: normal; word-break: break-all; line-height: 1.3; padding: 5px; border: 1px solid #000 !important; vertical-align: middle !important; background: #fff; box-sizing: border-box; }
         .col-fix-day { width: 30px !important; min-width: 30px !important; max-width: 30px !important; text-align: center; padding: 0 !important; border: 1px solid #000 !important; box-sizing: border-box; }
@@ -54,14 +48,13 @@
         tbody.gantt-month-group { break-inside: avoid; page-break-inside: avoid; border-bottom: 2px solid #000; }
         .gantt-month-header td { background: #e2e8f0; font-weight: bold; padding-left: 15px; border: 1px solid #000; font-size: 14px; height: 32px; }
         .stats-row td { background-color: #f8fafc; border: 1px solid #000; color: #1e40af; font-weight: bold; text-align: center; }
-
         .date-cell { display: flex; align-items: center; height: 100%; }
         .date-cell input { flex: 1; }
         .btn-calendar { width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; }
         .col-yellow { background: #ffffcc !important; }
         .col-blue-light { background: #e0f2fe !important; }
         .col-red-light { background: #fee2e2 !important; }
-
+        
         /* Modal */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
         .day-btn { padding: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 6px; font-size: 14px; }
@@ -70,11 +63,9 @@
         .print-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .month-select-btn { padding: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .month-select-btn.selected { background: #3b82f6; color: white; border-color: #2563eb; }
-
         #loading { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; font-size: 16px; backdrop-filter: blur(4px); }
         .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         @media print {
             @page { size: A3 landscape; margin: 5mm; }
             body { background: white; height: auto; overflow: visible; display: block !important; }
@@ -93,15 +84,11 @@
 
 <body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex selection:bg-blue-500 selection:text-white">
 
-    <div id="loading">
-        <div class="spinner"></div>
-        <div id="loadText">處理中...</div>
-    </div>
+    <div id="loading"><div class="spinner"></div><div id="loadText">處理中...</div></div>
 
-    <!-- Modal 區域 -->
+    <!-- Modal 區域 (日曆) -->
     <div id="dateModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
-            <!-- 這裡改回方案 A：箭頭切換 -->
             <div class="flex justify-between items-center mb-2">
                 <h3 class="font-bold text-lg text-slate-800">選擇日期</h3>
                 <select id="pickerYearSelect" onchange="changePickerYear(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded p-1 font-bold">
@@ -230,17 +217,17 @@
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
 
     <script>
-        // === 全域變數定義 ===
+        // === 1. 全域變數定義 ===
         let d1 = [], d2 = [], d3 = [];
         let currentTab = 1; 
         let printActionType = '';
         
+        // 初始化年份
         const nowYear = new Date().getFullYear();
         let currentYear = (nowYear >= 2025 && nowYear <= 2029) ? nowYear : 2025;
+        let pickerYear = currentYear; // 日曆彈窗用
         
-        let pickerYear = currentYear; // 日曆彈窗專用的年份變數
-        
-        // 內建假日表 (2025-2026)
+        // 內建假日表
         const builtInHolidays = {
             '2025-1-1': true, '2025-1-25': true, '2025-1-26': true, '2025-1-27': true, '2025-1-28': true, 
             '2025-1-29': true, '2025-1-30': true, '2025-1-31': true, '2025-2-1': true, '2025-2-2': true, 
@@ -256,7 +243,125 @@
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
 
-        // === 核心渲染函式 ===
+        // === 2. 下載與匯出函式 (放在最前面確保載入) ===
+        
+        function downloadCSVTemplate() {
+            let csvContent = "\uFEFF"; 
+            if (currentTab === 1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
+            else if (currentTab === 2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
+            else if (currentTab === 3) csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            saveAs(blob, `附件${currentTab}_範本.csv`);
+        }
+
+        async function exportExcelJS(selM) {
+            const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('甘特圖');
+            sh.getColumn(1).width = 50; for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
+            sh.addRow([`${currentYear}年 班期 / 活動名稱`, ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
+            
+            let rows = []; 
+            const parse = (r) => parseDateStr(r.date, r.ex);
+            
+            const add = (r, val, pre) => { 
+                let ds = parse(r);
+                ds = ds.filter(d => d.y === currentYear); // 關鍵過濾
+                let ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b); 
+                ms.forEach(m => { rows.push({ m: m, n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`, ds: ds.filter(o => o.m == m).map(o => o.d), v: val }); }); 
+            };
+            
+            d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') }); 
+            d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官') }); 
+            d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') });
+            
+            let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
+
+            selM.forEach(m => {
+                if (grp[m].length === 0) return;
+                let mt = sh.addRow([`${m} 月份`]); mt.font = { bold: true, size: 12 }; mt.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFe2e8f0' } };
+                let sum = Array(32).fill(0);
+                grp[m].forEach(r => {
+                    let dVis = [r.n], dDat = [""];
+                    for (let i = 1; i <= 31; i++) {
+                        if (r.ds.includes(i)) {
+                            dVis.push("");
+                            let vShow = "";
+                            if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) { vShow = parseInt(r.v); }
+                            dDat.push(vShow);
+                            sum[i] += parseInt(r.v) || 0;
+                        } else { dVis.push(""); dDat.push(""); }
+                    }
+                    let rVis = sh.addRow(dVis); let rDat = sh.addRow(dDat);
+                    rVis.eachCell((c, col) => { c.border = { right: { style: 'thin' } }; if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3b82f6' } }; });
+                    rDat.eachCell((c, col) => { c.border = { bottom: { style: 'thick' }, right: { style: 'thin' }, left: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; if (col === 1) c.alignment = { horizontal: 'left', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.font = { bold: true }; });
+                    sh.mergeCells(rVis.number, 1, rDat.number, 1);
+                });
+                let sd = ["每日統計"]; for (let i = 1; i <= 31; i++) sd.push(sum[i]);
+                let sr = sh.addRow(sd);
+                sr.eachCell((c) => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf1f5f9' } }; c.font = { bold: true, color: { argb: 'FF1e40af' } }; c.border = { top: { style: 'double' }, bottom: { style: 'thick' }, left: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; });
+                sh.addRow([]);
+            });
+            const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), "甘特圖報表.xlsx");
+        }
+
+        function downloadPDF(selectedMonths) {
+            const element = document.getElementById('ganttExportArea');
+            const container = document.querySelector('.table-container');
+            if(!element || !container) return;
+
+            const originalOverflow = container.style.overflow;
+            const originalWidth = container.style.width;
+
+            // 強制切換到甘特圖頁面以確保渲染
+            const originalTab = currentTab;
+            if(originalTab !== 4) {
+                switchTab(4); 
+            }
+
+            if (selectedMonths) {
+                for (let m = 1; m <= 12; m++) {
+                    const tb = document.getElementById(`month-${m}`);
+                    if (tb) {
+                        if (selectedMonths.includes(m)) tb.style.display = 'table-header-group';
+                        else tb.style.display = 'none';
+                    }
+                }
+            }
+
+            container.style.overflow = 'visible';
+            container.style.width = '1232px';
+
+            const opt = {
+                margin: 5,
+                filename: '甘特圖報表.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, scrollY: 0, useCORS: true, width: 1232 },
+                jsPDF: { unit: 'pt', format: 'a3', orientation: 'landscape' }
+            };
+
+            showLoading(true, "正在產生 PDF...");
+
+            // 加長等待時間確保渲染
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save()
+                .then(() => {
+                    container.style.overflow = originalOverflow;
+                    container.style.width = originalWidth;
+                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
+                    showLoading(false);
+                    if(originalTab !== 4) switchTab(originalTab);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("PDF 產生失敗");
+                    container.style.overflow = originalOverflow;
+                    container.style.width = originalWidth;
+                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
+                    showLoading(false);
+                });
+            }, 800);
+        }
+
+        // === 3. 核心渲染函式 ===
         function renderT1() {
             const tb = document.getElementById('tbody1'); if(!tb) return; tb.innerHTML = '';
             d1.forEach((r, i) => {
@@ -328,7 +433,7 @@
 
         function renderAll() { renderT1(); renderT2(); renderT3(); }
 
-        // === 事件與輔助 ===
+        // === 4. 事件與輔助 ===
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('hidden'); sidebar.classList.toggle('absolute'); sidebar.classList.toggle('h-full');
@@ -354,16 +459,13 @@
         }
 
         function delRow(t, i) {
-            // 刪除防護機制：要求輸入代碼 "119"
             const input = prompt("⚠️ 確定要刪除嗎？\n此操作無法復原！\n\n請輸入防呆碼「119」以確認刪除：");
-
             if (input === "119") {
                 if (t === 1) d1.splice(i, 1);
                 if (t === 2) d2.splice(i, 1);
                 if (t === 3) d3.splice(i, 1);
                 renderAll();
             } else if (input !== null) {
-                // 只要不是按取消，輸入錯誤就提示
                 alert("防呆碼錯誤，取消刪除。");
             }
         }
@@ -417,85 +519,79 @@
         }
 
         function showLoading(s, t) { 
-            const ld = document.getElementById('loading');
-            if(ld) ld.style.display = s ? 'flex' : 'none'; 
-            const txt = document.getElementById('loadText');
-            if(txt && t) txt.innerText = t; 
+            const ld = document.getElementById('loading'); if(ld) ld.style.display = s ? 'flex' : 'none'; 
+            const txt = document.getElementById('loadText'); if(txt && t) txt.innerText = t; 
         }
 
-        // === 雲端存取 (恢復) ===
+        // === 5. 雲端存取 ===
         function loadData() {
-            if (GAS_API_URL.includes("請填入")) { 
-                // 沒設定網址時，初始化空資料
-                if(d1.length === 0) addRow(1);
-                if(d2.length === 0) addRow(2);
-                if(d3.length === 0) addRow(3);
+            if (GAS_API_URL.includes("請填入")) { if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3); return; }
+            showLoading(true, "同步雲端...");
+            fetch(GAS_API_URL).then(r => r.json()).then(res => {
+                if (res.status === 'success') {
+                    d1 = (res.d1&&res.d1.length>0) ? res.d1.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], mp: r[12], ext: r[13]==='true', nt: r[14], kl: r[15], ty: r[16], yl: r[17], note: r[18], ex: JSON.parse(r[19]||'[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
+                    d2 = (res.d2&&res.d2.length>0) ? res.d2.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], inst: r[12], ext: r[13]==='true', note: r[14], ex: JSON.parse(r[15]||'[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
+                    d3 = (res.d3&&res.d3.length>0) ? res.d3.map(r => ({ unit: r[0], name: r[1], target: r[2], date: r[3], days: r[4], hours: r[5], mp: r[6], loc: r[7], ex: JSON.parse(r[8]||'[]'), isNew: false })) : [];
+                }
+                if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3);
                 renderAll();
-                return; 
-            }
-
-            showLoading(true, "正在同步雲端資料...");
-            fetch(GAS_API_URL)
-                .then(r => r.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        // 檢查回傳資料是否為空，若空則給預設值
-                        d1 = (res.d1 && res.d1.length > 0) ? res.d1.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], mp: r[12], ext: r[13] === 'true', nt: r[14], kl: r[15], ty: r[16], yl: r[17], note: r[18], ex: JSON.parse(r[19] || '[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
-                        d2 = (res.d2 && res.d2.length > 0) ? res.d2.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], inst: r[12], ext: r[13] === 'true', note: r[14], ex: JSON.parse(r[15] || '[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
-                        d3 = (res.d3 && res.d3.length > 0) ? res.d3.map(r => ({ unit: r[0], name: r[1], target: r[2], date: r[3], days: r[4], hours: r[5], mp: r[6], loc: r[7], ex: JSON.parse(r[8] || '[]'), isNew: false })) : [];
-                        
-                        // 如果資料庫真的是空的，補一列空白
-                        if (d1.length === 0) addRow(1);
-                        if (d2.length === 0) addRow(2);
-                        if (d3.length === 0) addRow(3);
-                        
-                        renderAll();
-                    } else {
-                        // 讀取失敗也要顯示空白列
-                        if (d1.length === 0) addRow(1);
-                        if (d2.length === 0) addRow(2);
-                        if (d3.length === 0) addRow(3);
-                        renderAll();
-                    }
-                })
-                .catch(e => {
-                    console.error("連線錯誤", e);
-                    // 連線錯誤也要顯示空白列，確保 UI 正常
-                    if (d1.length === 0) addRow(1);
-                    if (d2.length === 0) addRow(2);
-                    if (d3.length === 0) addRow(3);
-                    renderAll();
-                })
-                .finally(() => showLoading(false));
+            }).catch(e => { console.error(e); if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3); renderAll(); })
+            .finally(() => showLoading(false));
         }
 
         function saveData() {
-            showLoading(true, "正在儲存至雲端...");
-            const p1 = d1.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch * r.pb) || 0, r.dHour, r.bHour, (r.batch * r.bHour) || 0, r.mp, r.ext, r.nt, r.kl, r.ty, r.yl, r.note, JSON.stringify(r.ex)]);
-            const p2 = d2.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch * r.pb) || 0, r.dHour, r.bHour, (r.batch * r.bHour) || 0, r.inst, r.ext, r.note, JSON.stringify(r.ex)]);
+            showLoading(true, "儲存中...");
+            const p1 = d1.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.mp, r.ext, r.nt, r.kl, r.ty, r.yl, r.note, JSON.stringify(r.ex)]);
+            const p2 = d2.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.inst, r.ext, r.note, JSON.stringify(r.ex)]);
             const p3 = d3.map(r => [r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc, JSON.stringify(r.ex)]);
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ d1: p1, d2: p2, d3: p3 }), headers: { 'Content-Type': 'text/plain' } })
-                .then(r => r.json()).then(res => { if (res.status === 'success') { alert(res.message);[d1, d2, d3].forEach(arr => arr.forEach(r => r.isNew = false)); renderAll(); } else alert("錯誤: " + res.message); })
-                .catch(e => alert("存檔失敗 (連線錯誤)"))
+                .then(r => r.json()).then(res => { if (res.status === 'success') { alert(res.message); loadData(); } else alert("錯誤: " + res.message); })
+                .catch(e => alert("存檔失敗"))
                 .finally(() => showLoading(false));
         }
 
-        // === 智慧年份與日期邏輯 ===
-        function changeYear(val) {
-            currentYear = parseInt(val);
-            currentCalendarMonth = 1;
-            if(currentTab === 4) renderGantt();
+        function processCSV(input) {
+            if (!input.files[0]) return;
+            const file = input.files[0];
+            
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    const data = results.data;
+                    let currentData = (currentTab === 1) ? d1 : (currentTab === 2 ? d2 : d3);
+                    let hasData = currentData.length > 1 || (currentData.length === 1 && (currentData[0].unit !== '' || currentData[0].date !== ''));
+                    let shouldClear = false;
+                    
+                    if (hasData) {
+                        if (confirm("⚠️ 表格內已有資料！\n\n按「確定」：清除現有資料，只保留匯入的檔案 (覆蓋模式)。\n按「取消」：保留現有資料，將檔案加在最後面 (附加模式)。")) {
+                            shouldClear = true;
+                        }
+                    } else { shouldClear = true; }
+
+                    if (shouldClear) {
+                        if (currentTab === 1) d1 = [];
+                        if (currentTab === 2) d2 = [];
+                        if (currentTab === 3) d3 = [];
+                    }
+
+                    if (currentTab === 1) {
+                        data.forEach(r => { d1.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', mp: r['預計調用人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', nt: r['新北']||'', kl: r['基隆']||'', ty: r['桃園']||'', yl: r['宜蘭']||'', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT1();
+                    } else if (currentTab === 2) {
+                        data.forEach(r => { d2.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', inst: r['調用教官人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', note: r['備註']||'', ex: [], isNew: true }); });
+                        renderT2();
+                    } else if (currentTab === 3) {
+                        data.forEach(r => { d3.push({ unit: r['承辦單位']||'', name: r['活動名稱']||'', target: r['參加對象']||'', date: r['日期']||'', days: r['天數']||'', hours: r['時數']||'', mp: r['每日調用人數']||'', loc: r['地點']||'', ex: [], isNew: true }); });
+                        renderT3();
+                    }
+                    input.value = ''; 
+                    alert(shouldClear ? "資料已覆蓋匯入" : "資料已附加匯入");
+                }
+            });
         }
 
-        function isDayOff(year, month, day) {
-            const dateStr = `${year}-${month}-${day}`;
-            const w = new Date(year, month - 1, day).getDay();
-            if (builtInHolidays[dateStr]) return true;
-            if (w === 0 || w === 6) return true;
-            return false;
-        }
-
-        // 智慧日期解析修正版
+        // === 6. 智慧年份與日期解析 ===
         function parseDateStr(str, excludeList) {
             let results = [];
             if (!str) return results;
@@ -614,7 +710,7 @@
             return results;
         }
 
-        // === 甘特圖與下載 ===
+        // === 7. 甘特圖渲染 ===
         function renderGantt() {
             const table = document.getElementById('table4');
             const container = document.getElementById('ganttContainer');
@@ -702,136 +798,42 @@
             }
         }
 
-        // 下載修復：強制渲染
-        function downloadPDF(selectedMonths) {
-            const element = document.getElementById('ganttExportArea');
-            const container = document.querySelector('.table-container');
-            if(!element || !container) return;
-
-            const originalOverflow = container.style.overflow;
-            const originalWidth = container.style.width;
-
-            // 強制切換到甘特圖頁面以確保渲染
-            const originalTab = currentTab;
-            if(originalTab !== 4) {
-                switchTab(4); 
-            }
-
-            if (selectedMonths) {
-                for (let m = 1; m <= 12; m++) {
-                    const tb = document.getElementById(`month-${m}`);
-                    if (tb) {
-                        if (selectedMonths.includes(m)) tb.style.display = 'table-header-group';
-                        else tb.style.display = 'none';
-                    }
-                }
-            }
-
-            container.style.overflow = 'visible';
-            container.style.width = '1232px';
-
-            const opt = {
-                margin: 5,
-                filename: '甘特圖報表.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, scrollY: 0, useCORS: true, width: 1232 },
-                jsPDF: { unit: 'pt', format: 'a3', orientation: 'landscape' }
-            };
-
-            showLoading(true, "正在產生 PDF...");
-
-            // 給一點時間讓瀏覽器渲染
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save()
-                .then(() => {
-                    container.style.overflow = originalOverflow;
-                    container.style.width = originalWidth;
-                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                    showLoading(false);
-                    // 下載完切回原本的分頁
-                    if(originalTab !== 4) switchTab(originalTab);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("PDF 產生失敗");
-                    container.style.overflow = originalOverflow;
-                    container.style.width = originalWidth;
-                    for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                    showLoading(false);
-                });
-            }, 500);
-        }
-
-        // Excel 下載 (修復版)
-        async function exportExcelJS(selM) {
-            const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('甘特圖');
-            sh.getColumn(1).width = 50; for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
-            sh.addRow([`${currentYear}年 班期 / 活動名稱`, ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
-            
-            let rows = []; 
-            const parse = (r) => parseDateStr(r.date, r.ex);
-            
-            const add = (r, val, pre) => { 
-                let ds = parse(r);
-                ds = ds.filter(d => d.y === currentYear); // 關鍵過濾
-                let ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b); 
-                ms.forEach(m => { rows.push({ m: m, n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`, ds: ds.filter(o => o.m == m).map(o => o.d), v: val }); }); 
-            };
-            
-            d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') }); 
-            d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官') }); 
-            d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') });
-            
-            let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
-
-            selM.forEach(m => {
-                if (grp[m].length === 0) return;
-                let mt = sh.addRow([`${m} 月份`]); mt.font = { bold: true, size: 12 }; mt.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFe2e8f0' } };
-                let sum = Array(32).fill(0);
-                grp[m].forEach(r => {
-                    let dVis = [r.n], dDat = [""];
-                    for (let i = 1; i <= 31; i++) {
-                        if (r.ds.includes(i)) {
-                            dVis.push("");
-                            let vShow = "";
-                            if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) { vShow = parseInt(r.v); }
-                            dDat.push(vShow);
-                            sum[i] += parseInt(r.v) || 0;
-                        } else { dVis.push(""); dDat.push(""); }
-                    }
-                    let rVis = sh.addRow(dVis); let rDat = sh.addRow(dDat);
-                    rVis.eachCell((c, col) => { c.border = { right: { style: 'thin' } }; if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3b82f6' } }; });
-                    rDat.eachCell((c, col) => { c.border = { bottom: { style: 'thick' }, right: { style: 'thin' }, left: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; if (col === 1) c.alignment = { horizontal: 'left', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.font = { bold: true }; });
-                    sh.mergeCells(rVis.number, 1, rDat.number, 1);
-                });
-                let sd = ["每日統計"]; for (let i = 1; i <= 31; i++) sd.push(sum[i]);
-                let sr = sh.addRow(sd);
-                sr.eachCell((c) => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf1f5f9' } }; c.font = { bold: true, color: { argb: 'FF1e40af' } }; c.border = { top: { style: 'double' }, bottom: { style: 'thick' }, left: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; });
-                sh.addRow([]);
-            });
-            const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), "甘特圖報表.xlsx");
-        }
-        
-        // Modal Open
+        // === 8. 日曆 Modal (獨立操作) ===
         function openDateModal(t, i) {
             currentEdit = { t, i };
             const val = t === 1 ? d1[i].date : t === 2 ? d2[i].date : d3[i].date;
             selectedDates.clear();
 
             const parsed = parseDateStr(val);
-            // Only show dates for current viewed year in the picker
+            // 如果沒有日期，或第一個日期是今年，就預設選中今年
+            // 如果有日期且是其他年份，就讓日曆跳到該年份
+            if (parsed.length > 0) {
+                pickerYear = parsed[0].y;
+                currentCalendarMonth = parsed[0].m;
+            } else {
+                pickerYear = nowYear; // 預設跳到今天
+                currentCalendarMonth = new Date().getMonth() + 1;
+            }
+            
+            // 更新選取狀態
             parsed.forEach(o => {
-                if(o.y === currentYear) selectedDates.add(`${o.m}-${o.d}`);
+                if(o.y === pickerYear) selectedDates.add(`${o.m}-${o.d}`);
             });
 
-            if (parsed.length > 0) currentCalendarMonth = parsed[0].m;
-            else currentCalendarMonth = 1;
+            // 更新下拉選單
+            document.getElementById('pickerYearSelect').value = pickerYear;
 
             renderCalendar();
             document.getElementById('dateModal').classList.remove('hidden');
             document.getElementById('dateModal').classList.add('flex');
         }
         
+        function changePickerYear(val) {
+            pickerYear = parseInt(val);
+            selectedDates.clear(); // 切換年份時清空選取
+            renderCalendar();
+        }
+
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
             document.getElementById(id).classList.remove('flex');
@@ -841,13 +843,12 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
-            // 1. 標題區 (含年份切換、左右月)
+            // 標題區
             const header = document.createElement('div');
             header.className = "col-span-7 flex justify-between items-center mb-2";
-            // 注意：這裡 pickerYear 顯示民國年
             header.innerHTML = `
                 <button onclick="changeMonth(-1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-left-s-line"></i></button>
-                <span class="font-bold text-lg text-blue-600">${pickerYear-1911}年 ${currentCalendarMonth} 月</span>
+                <span class="font-bold text-lg text-blue-600">${currentCalendarMonth} 月</span>
                 <button onclick="changeMonth(1)" class="px-2 py-1 bg-slate-100 rounded hover:bg-slate-200"><i class="ri-arrow-right-s-line"></i></button>
             `;
             grid.appendChild(header);
@@ -881,18 +882,11 @@
             }
         }
         
-        function changePickerYear(val) {
-            pickerYear = parseInt(val);
-            renderCalendar();
-        }
-
         function changeMonth(delta) {
             currentCalendarMonth += delta;
             if (currentCalendarMonth < 1) { currentCalendarMonth = 12; pickerYear--; }
             if (currentCalendarMonth > 12) { currentCalendarMonth = 1; pickerYear++; }
-            // 同步更新上方年份選單
-            const yearSel = document.getElementById('pickerYearSelect');
-            if(yearSel) yearSel.value = pickerYear;
+            document.getElementById('pickerYearSelect').value = pickerYear;
             renderCalendar();
         }
 
@@ -915,14 +909,14 @@
 
         function saveDateModal() {
             if (!currentEdit) return;
-            // 排序邏輯：先月份、再日期
             const sorted = [...selectedDates].map(s => {
                 const [m, d] = s.split('-').map(Number);
                 return { m, d, val: m * 100 + d };
             }).sort((a, b) => a.val - b.val);
 
             let str = "";
-            // 如果有選日期，並且選擇的年份 不是「今年」或「自動判斷的明年」，則加上年份前綴
+            // 判斷是否需要加上年份前綴
+            // 規則：如果選的年份 不是「今年」且 不是「自動判斷的明年」，則強制加上年份
             const todayYear = new Date().getFullYear();
             const needsYearPrefix = (pickerYear !== todayYear && pickerYear !== todayYear + 1);
             const prefix = needsYearPrefix ? `${pickerYear-1911}年` : "";
@@ -947,13 +941,12 @@
             updateMonthFromDate(t, i, str); renderAll(); closeModal('dateModal');
         }
 
-        // Window Onload (Start)
+        // === 初始化 ===
         window.onload = function () { 
             const yearSelect = document.getElementById('yearSelect');
             if(yearSelect) yearSelect.value = currentYear;
             updateToolbar();
-            
-            // 初始化空資料列
+            // 初始化空資料
             if (d1.length === 0) addRow(1);
             if (d2.length === 0) addRow(2);
             if (d3.length === 0) addRow(3);
