@@ -18,78 +18,390 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
-        .table-container { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { border-collapse: collapse; font-size: 13px; table-layout: fixed; width: auto; border-spacing: 0; }
-        #table1 { min-width: 2000px; } #table2 { min-width: 1800px; }
-        td { border: 1px solid #cbd5e1; height: auto; min-height: 38px; background: white; padding: 0; vertical-align: middle; }
-        input[type="text"], input[type="number"] { width: 100%; height: 38px; border: none; outline: none; background: transparent; text-align: center; font-family: inherit; font-size: 13px; display: block; color: #334155; }
-        input:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
-        textarea { width: 100%; min-height: 38px; height: 100%; border: none; resize: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; text-align: left; padding: 8px; box-sizing: border-box; line-height: 1.4; }
-        textarea:focus { background: #eff6ff; box-shadow: inset 0 0 0 2px #3b82f6; }
-        
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+            width: auto;
+            border-spacing: 0;
+        }
+
+        #table1 {
+            min-width: 2000px;
+        }
+
+        #table2 {
+            min-width: 1800px;
+        }
+
+        td {
+            border: 1px solid #cbd5e1;
+            height: auto;
+            min-height: 38px;
+            background: white;
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            height: 38px;
+            border: none;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            font-family: inherit;
+            font-size: 13px;
+            display: block;
+            color: #334155;
+        }
+
+        input:focus {
+            background: #eff6ff;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 38px;
+            height: 100%;
+            border: none;
+            resize: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            text-align: left;
+            padding: 8px;
+            box-sizing: border-box;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            background: #eff6ff;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
         /* 甘特圖專用 CSS */
-        #table4 { width: 1232px !important; min-width: 1232px !important; max-width: 1232px !important; table-layout: fixed !important; border-collapse: collapse; margin: 0; }
-        .col-fix-name { width: 300px !important; min-width: 300px !important; max-width: 300px !important; white-space: normal; word-break: break-all; line-height: 1.3; padding: 5px; border: 1px solid #000 !important; vertical-align: middle !important; background: #fff; box-sizing: border-box; }
-        .col-fix-day { width: 30px !important; min-width: 30px !important; max-width: 30px !important; text-align: center; padding: 0 !important; border: 1px solid #000 !important; box-sizing: border-box; }
-        .gantt-visual-row, .gantt-data-row { height: 28px; line-height: 28px; }
-        .gantt-cell-bar { border-bottom: none; height: 28px; }
-        .gantt-num { border-top: none; font-weight: bold; color: #000; font-size: 12px; height: 28px; line-height: 28px; }
-        .weekend { background-color: #f3f4f6; }
-        .holiday-red { background-color: #fee2e2; }
-        .bar-active { background-color: #3b82f6 !important; border-color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        tbody.gantt-month-group { break-inside: avoid; page-break-inside: avoid; border-bottom: 2px solid #000; }
-        .gantt-month-header td { background: #e2e8f0; font-weight: bold; padding-left: 15px; border: 1px solid #000; font-size: 14px; height: 32px; }
-        .stats-row td { background-color: #f8fafc; border: 1px solid #000; color: #1e40af; font-weight: bold; text-align: center; }
+        #table4 {
+            width: 1232px !important;
+            min-width: 1232px !important;
+            max-width: 1232px !important;
+            table-layout: fixed !important;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .col-fix-name {
+            width: 300px !important;
+            min-width: 300px !important;
+            max-width: 300px !important;
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.3;
+            padding: 5px;
+            border: 1px solid #000 !important;
+            vertical-align: middle !important;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .col-fix-day {
+            width: 30px !important;
+            min-width: 30px !important;
+            max-width: 30px !important;
+            text-align: center;
+            padding: 0 !important;
+            border: 1px solid #000 !important;
+            box-sizing: border-box;
+        }
+
+        .gantt-visual-row,
+        .gantt-data-row {
+            height: 28px;
+            line-height: 28px;
+        }
+
+        .gantt-cell-bar {
+            border-bottom: none;
+            height: 28px;
+        }
+
+        .gantt-num {
+            border-top: none;
+            font-weight: bold;
+            color: #000;
+            font-size: 12px;
+            height: 28px;
+            line-height: 28px;
+        }
+
+        .weekend {
+            background-color: #f3f4f6;
+        }
+
+        .holiday-red {
+            background-color: #fee2e2;
+        }
+
+        .bar-active {
+            background-color: #3b82f6 !important;
+            border-color: #000;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tbody.gantt-month-group {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            border-bottom: 2px solid #000;
+        }
+
+        .gantt-month-header td {
+            background: #e2e8f0;
+            font-weight: bold;
+            padding-left: 15px;
+            border: 1px solid #000;
+            font-size: 14px;
+            height: 32px;
+        }
+
+        .stats-row td {
+            background-color: #f8fafc;
+            border: 1px solid #000;
+            color: #1e40af;
+            font-weight: bold;
+            text-align: center;
+        }
 
         /* UI 元件 */
-        .date-cell { display: flex; align-items: center; height: 100%; }
-        .date-cell input { flex: 1; }
-        .btn-calendar { width: 30px; height: 100%; min-height: 38px; border: none; border-left: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; }
-        .col-yellow { background: #ffffcc !important; }
-        .col-blue-light { background: #e0f2fe !important; }
-        .col-red-light { background: #fee2e2 !important; }
-        
+        .date-cell {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .date-cell input {
+            flex: 1;
+        }
+
+        .btn-calendar {
+            width: 30px;
+            height: 100%;
+            min-height: 38px;
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            cursor: pointer;
+            background: #f8fafc;
+            color: #64748b;
+            transition: 0.2s;
+        }
+
+        .col-yellow {
+            background: #ffffcc !important;
+        }
+
+        .col-blue-light {
+            background: #e0f2fe !important;
+        }
+
+        .col-red-light {
+            background: #fee2e2 !important;
+        }
+
         /* Modal */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
-        .day-btn { padding: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 6px; font-size: 14px; }
-        .day-btn.active.excluded { background: #64748b; color: white; text-decoration: line-through; border-color: #475569; }
-        .day-btn.active { background: #dbeafe; color: #1e40af; font-weight: bold; border-color: #3b82f6; }
-        .print-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        .month-select-btn { padding: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer; text-align: center; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        .month-select-btn.selected { background: #3b82f6; color: white; border-color: #2563eb; }
-        
-        #loading { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; font-size: 16px; backdrop-filter: blur(4px); }
-        .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .day-btn {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .day-btn.active.excluded {
+            background: #64748b;
+            color: white;
+            text-decoration: line-through;
+            border-color: #475569;
+        }
+
+        .day-btn.active {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: bold;
+            border-color: #3b82f6;
+        }
+
+        .print-month-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .month-select-btn {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.2s;
+            font-size: 13px;
+        }
+
+        .month-select-btn.selected {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            flex-direction: column;
+            font-size: 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #fff;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         /* 列印隱藏 */
         @media print {
-            @page { size: A3 landscape; margin: 5mm; }
-            body { background: white; height: auto; overflow: visible; display: block !important; }
-            #sidebar, .top-bar, .btn-add-row, .del-btn, .btn-calendar, #loading, #csvInput, #toolbar-container, .mobile-header, #yearSelectorContainer { display: none !important; }
-            .main-content, .workspace, .view-section, .table-container { width: 100%; height: auto; overflow: visible; display: block; padding: 0; margin: 0; border: none; box-shadow: none; }
-            .view-section { display: none; }
-            .view-section.active { display: block; }
-            #table4 { width: 1232px !important; min-width: 1232px !important; table-layout: fixed !important; }
-            .col-fix-name { width: 300px !important; }
-            .col-fix-day { width: 30px !important; padding: 0 !important; }
-            table, th, td { border: 1px solid #000 !important; }
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page {
+                size: A3 landscape;
+                margin: 5mm;
+            }
+
+            body {
+                background: white;
+                height: auto;
+                overflow: visible;
+                display: block !important;
+            }
+
+            #sidebar,
+            .top-bar,
+            .btn-add-row,
+            .del-btn,
+            .btn-calendar,
+            #loading,
+            #csvInput,
+            #toolbar-container,
+            .mobile-header,
+            #yearSelectorContainer {
+                display: none !important;
+            }
+
+            .main-content,
+            .workspace,
+            .view-section,
+            .table-container {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                display: block;
+                padding: 0;
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .view-section {
+                display: none;
+            }
+
+            .view-section.active {
+                display: block;
+            }
+
+            #table4 {
+                width: 1232px !important;
+                min-width: 1232px !important;
+                table-layout: fixed !important;
+            }
+
+            .col-fix-name {
+                width: 300px !important;
+            }
+
+            .col-fix-day {
+                width: 30px !important;
+                padding: 0 !important;
+            }
+
+            table,
+            th,
+            td {
+                border: 1px solid #000 !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
 
 <body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex selection:bg-blue-500 selection:text-white">
 
-    <div id="loading"><div class="spinner"></div><div id="loadText">處理中...</div></div>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loadText">處理中...</div>
+    </div>
 
     <!-- 日曆 Modal -->
     <div id="dateModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="font-bold text-lg text-slate-800">選擇日期</h3>
-                <select id="pickerYearSelect" onchange="changePickerYear(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded p-1 font-bold">
+                <select id="pickerYearSelect" onchange="changePickerYear(this.value)"
+                    class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded p-1 font-bold">
                     <option value="2025">114年</option>
                     <option value="2026">115年</option>
                     <option value="2027">116年</option>
@@ -99,15 +411,23 @@
             </div>
             <div id="modalRangeText" class="text-sm text-blue-600 mb-3 font-mono"></div>
             <div class="flex flex-wrap gap-2 mb-4">
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('all')">全選</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('no-weekend')">排除六日</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100" onclick="applyDateFilter('only-weekend')">僅選六日</button>
-                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100 text-red-500 border-red-200" onclick="applyDateFilter('clear')">清除</button>
+                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100"
+                    onclick="applyDateFilter('all')">全選</button>
+                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100"
+                    onclick="applyDateFilter('no-weekend')">排除六日</button>
+                <button class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100"
+                    onclick="applyDateFilter('only-weekend')">僅選六日</button>
+                <button
+                    class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-100 text-red-500 border-red-200"
+                    onclick="applyDateFilter('clear')">清除</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <div class="flex justify-end gap-2 mt-6">
-                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold" onclick="closeModal('dateModal')">取消</button>
-                <button class="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold shadow-lg" onclick="saveDateModal()">確定</button>
+                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold"
+                    onclick="closeModal('dateModal')">取消</button>
+                <button
+                    class="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold shadow-lg"
+                    onclick="saveDateModal()">確定</button>
             </div>
         </div>
     </div>
@@ -116,46 +436,85 @@
     <div id="printModal" class="fixed inset-0 bg-black/50 hidden z-[2000] justify-center items-center backdrop-blur-sm">
         <div class="bg-white w-[90%] max-w-[420px] p-6 rounded-2xl shadow-2xl">
             <h3 class="font-bold text-lg mb-2 text-slate-800">請選擇輸出月份</h3>
-            <div class="flex justify-between items-center mb-4"><span class="text-xs text-slate-500">未選取月份將被隱藏</span><button class="px-2 py-1 text-xs border rounded" onclick="toggleAllMonths()">全選/反選</button></div>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs text-slate-500">未選取月份將被隱藏</span>
+                <button class="px-2 py-1 text-xs border rounded" onclick="toggleAllMonths()">全選/反選</button>
+            </div>
             <div class="print-month-grid" id="printMonthGrid"></div>
             <div class="flex justify-end gap-2 mt-6">
-                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold" onclick="closeModal('printModal')">取消</button>
-                <button class="px-5 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-bold shadow-lg" onclick="executePrintOrExport()">確認執行</button>
+                <button class="px-5 py-2 text-slate-500 hover:bg-slate-100 rounded-xl font-bold"
+                    onclick="closeModal('printModal')">取消</button>
+                <button
+                    class="px-5 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-bold shadow-lg"
+                    onclick="executePrintOrExport()">確認執行</button>
             </div>
         </div>
     </div>
 
     <!-- 側邊欄 -->
-    <aside id="sidebar" class="w-64 bg-slate-900 text-white hidden md:flex flex-col shadow-2xl z-30 transition-all duration-300">
+    <aside id="sidebar"
+        class="w-64 bg-slate-900 text-white hidden md:flex flex-col shadow-2xl z-30 transition-all duration-300">
         <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg"><i class="ri-flow-chart text-white"></i></div>
-            <div><h1 class="font-bold text-lg tracking-wide">訓練流路</h1><p class="text-xs text-slate-400">訓練中心內部系統</p></div>
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg"><i
+                    class="ri-flow-chart text-white"></i></div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">訓練流路</h1>
+                <p class="text-xs text-slate-400">訓練中心內部系統</p>
+            </div>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <div onclick="switchTab(1, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 flex items-center gap-3 hover:bg-blue-600 hover:text-white transition"><i class="ri-user-fire-line text-xl"></i> 消防人員</div>
-            <div onclick="switchTab(2, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-group-line text-xl"></i> 非消防人員</div>
-            <div onclick="switchTab(3, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-flag-line text-xl"></i> 重大活動</div>
-            <div onclick="switchTab(4, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-bar-chart-horizontal-line text-xl"></i> 甘特圖</div>
+            <div onclick="switchTab(1, this)"
+                class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 flex items-center gap-3 hover:bg-blue-600 hover:text-white transition">
+                <i class="ri-user-fire-line text-xl"></i> 消防人員
+            </div>
+            <div onclick="switchTab(2, this)"
+                class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition">
+                <i class="ri-group-line text-xl"></i> 非消防人員
+            </div>
+            <div onclick="switchTab(3, this)"
+                class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition">
+                <i class="ri-flag-line text-xl"></i> 重大活動
+            </div>
+            <div onclick="switchTab(4, this)"
+                class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition">
+                <i class="ri-bar-chart-horizontal-line text-xl"></i> 甘特圖
+            </div>
         </nav>
         <div class="p-4 border-t border-slate-800 space-y-2 bg-slate-900">
             <div class="text-[10px] text-slate-500 font-bold px-4 mb-1 uppercase tracking-wider">系統切換</div>
-            <a href="javascript:void(0)" onclick="location.href=OTHER_SYSTEM_URL" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm"><i class="ri-building-2-fill text-lg text-indigo-400"></i> 場地借用系統</a>
-            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL" class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition text-xs"><i class="ri-arrow-left-line"></i> 回整合首頁</a>
+            <a href="javascript:void(0)" onclick="location.href=OTHER_SYSTEM_URL"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                <i class="ri-building-2-fill text-lg text-indigo-400"></i> 場地借用系統
+            </a>
+            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL"
+                class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition text-xs">
+                <i class="ri-arrow-left-line"></i> 回整合首頁
+            </a>
         </div>
     </aside>
 
     <!-- 主內容 -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-100">
-        <div class="mobile-header bg-white md:hidden h-14 flex items-center justify-between px-4 shadow-sm border-b border-slate-200 z-20">
-            <div class="flex items-center gap-3"><button onclick="toggleMobileSidebar()" class="text-slate-600 p-2"><i class="ri-menu-line text-xl"></i></button><div class="font-bold text-slate-800" id="mobilePageTitle">消防人員</div></div>
-            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL" class="text-slate-400 hover:text-blue-600"><i class="ri-home-4-line text-xl"></i></a>
+        <div
+            class="mobile-header bg-white md:hidden h-14 flex items-center justify-between px-4 shadow-sm border-b border-slate-200 z-20">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileSidebar()" class="text-slate-600 p-2"><i
+                        class="ri-menu-line text-xl"></i></button>
+                <div class="font-bold text-slate-800" id="mobilePageTitle">消防人員</div>
+            </div>
+            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL"
+                class="text-slate-400 hover:text-blue-600"><i class="ri-home-4-line text-xl"></i></a>
         </div>
 
-        <div id="toolbar-container" class="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm z-10">
-            <div class="text-lg font-bold text-slate-800 hidden md:flex items-center gap-2" id="pageTitle"><span class="w-2 h-6 bg-blue-600 rounded-full"></span> 附件1 - 消防人員</div>
+        <div id="toolbar-container"
+            class="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm z-10">
+            <div class="text-lg font-bold text-slate-800 hidden md:flex items-center gap-2" id="pageTitle">
+                <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 附件1 - 消防人員
+            </div>
             <div id="yearSelectorContainer" class="hidden flex items-center gap-2">
                 <span class="text-sm font-bold text-slate-600">年度:</span>
-                <select id="yearSelect" onchange="changeYear(this.value)" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg block p-1.5 font-bold">
+                <select id="yearSelect" onchange="changeYear(this.value)"
+                    class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg block p-1.5 font-bold">
                     <option value="2025">114年 (2025)</option>
                     <option value="2026">115年 (2026)</option>
                     <option value="2027">116年 (2027)</option>
@@ -170,35 +529,99 @@
             <div id="view1" class="view-section h-full flex flex-col">
                 <div class="table-container flex-1 mb-4">
                     <table id="table1">
-                        <thead><tr><th style="width:50px">刪除</th><th style="width:40px">項次</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:80px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">上課地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:100px" class="col-blue-light">預計調用人數<br>(分隊人力)</th><th style="width:120px" class="col-yellow">是否提供宜基<br>北桃參訓</th><th style="width:60px" class="col-yellow">暫訂<br>新北</th><th style="width:60px" class="col-yellow">暫訂<br>基隆</th><th style="width:60px" class="col-yellow">暫訂<br>桃園</th><th style="width:60px" class="col-yellow">暫訂<br>宜蘭</th><th style="width:150px">備註</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width:50px">刪除</th>
+                                <th style="width:40px">項次</th>
+                                <th style="width:40px">月份</th>
+                                <th style="width:100px">承辦單位</th>
+                                <th style="width:200px">課程名稱</th>
+                                <th style="width:80px">訓練對象</th>
+                                <th style="width:140px">課程日期</th>
+                                <th style="width:120px">上課地點</th>
+                                <th style="width:40px">梯數</th>
+                                <th style="width:50px">每梯<br>人數</th>
+                                <th style="width:50px">合計<br>人數</th>
+                                <th style="width:50px">每天<br>時數</th>
+                                <th style="width:50px">每梯<br>時數</th>
+                                <th style="width:50px">合計<br>時數</th>
+                                <th style="width:100px" class="col-blue-light">預計調用人數<br>(分隊人力)</th>
+                                <th style="width:120px" class="col-yellow">是否提供宜基<br>北桃參訓</th>
+                                <th style="width:60px" class="col-yellow">暫訂<br>新北</th>
+                                <th style="width:60px" class="col-yellow">暫訂<br>基隆</th>
+                                <th style="width:60px" class="col-yellow">暫訂<br>桃園</th>
+                                <th style="width:60px" class="col-yellow">暫訂<br>宜蘭</th>
+                                <th style="width:150px">備註</th>
+                            </tr>
+                        </thead>
                         <tbody id="tbody1"></tbody>
                     </table>
                 </div>
-                <button class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0" onclick="addRow(1)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
+                <button
+                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0"
+                    onclick="addRow(1)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
             </div>
 
             <div id="view2" class="view-section hidden h-full flex flex-col">
                 <div class="table-container flex-1 mb-4">
                     <table id="table2">
-                        <thead><tr><th style="width:50px">刪除</th><th style="width:40px">序號</th><th style="width:40px">月份</th><th style="width:100px">承辦單位</th><th style="width:200px">課程名稱</th><th style="width:120px">訓練對象</th><th style="width:140px">課程日期</th><th style="width:120px">訓練地點</th><th style="width:40px">梯數</th><th style="width:50px">每梯<br>人數</th><th style="width:50px">合計<br>人數</th><th style="width:50px">每天<br>時數</th><th style="width:50px">每梯<br>時數</th><th style="width:50px">合計<br>時數</th><th style="width:80px">調用本局<br>教官人數</th><th style="width:100px">是否提供<br>跨縣市</th><th style="width:150px">備註</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width:50px">刪除</th>
+                                <th style="width:40px">序號</th>
+                                <th style="width:40px">月份</th>
+                                <th style="width:100px">承辦單位</th>
+                                <th style="width:200px">課程名稱</th>
+                                <th style="width:120px">訓練對象</th>
+                                <th style="width:140px">課程日期</th>
+                                <th style="width:120px">訓練地點</th>
+                                <th style="width:40px">梯數</th>
+                                <th style="width:50px">每梯<br>人數</th>
+                                <th style="width:50px">合計<br>人數</th>
+                                <th style="width:50px">每天<br>時數</th>
+                                <th style="width:50px">每梯<br>時數</th>
+                                <th style="width:50px">合計<br>時數</th>
+                                <th style="width:80px">調用本局<br>教官人數</th>
+                                <th style="width:100px">是否提供<br>跨縣市</th>
+                                <th style="width:150px">備註</th>
+                            </tr>
+                        </thead>
                         <tbody id="tbody2"></tbody>
                     </table>
                 </div>
-                <button class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0" onclick="addRow(2)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
+                <button
+                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0"
+                    onclick="addRow(2)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
             </div>
 
             <div id="view3" class="view-section hidden h-full flex flex-col">
                 <div class="table-container flex-1 mb-4">
                     <table id="table3">
-                        <thead><tr><th style="width:50px">刪除</th><th style="width:40px">序號</th><th style="width:100px">承辦單位</th><th style="width:250px">重大活動演習名稱</th><th style="width:150px">參加對象</th><th style="width:140px">日期</th><th style="width:50px">天數</th><th style="width:50px">時數</th><th style="width:100px" class="col-red-light">每日調用<br>外勤人數</th><th style="width:150px">地點(教室)</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width:50px">刪除</th>
+                                <th style="width:40px">序號</th>
+                                <th style="width:100px">承辦單位</th>
+                                <th style="width:250px">重大活動演習名稱</th>
+                                <th style="width:150px">參加對象</th>
+                                <th style="width:140px">日期</th>
+                                <th style="width:50px">天數</th>
+                                <th style="width:50px">時數</th>
+                                <th style="width:100px" class="col-red-light">每日調用<br>外勤人數</th>
+                                <th style="width:150px">地點(教室)</th>
+                            </tr>
+                        </thead>
                         <tbody id="tbody3"></tbody>
                     </table>
                 </div>
-                <button class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0" onclick="addRow(3)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
+                <button
+                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg font-bold transition flex items-center gap-2 w-fit mx-auto md:mx-0"
+                    onclick="addRow(3)"><i class="ri-add-line text-lg"></i> 新增資料列</button>
             </div>
 
             <div id="view4" class="view-section hidden h-full flex flex-col">
-                <div class="bg-amber-50 text-amber-800 px-4 py-3 rounded-xl border border-amber-200 text-sm mb-4 flex items-center gap-2 shadow-sm">
+                <div
+                    class="bg-amber-50 text-amber-800 px-4 py-3 rounded-xl border border-amber-200 text-sm mb-4 flex items-center gap-2 shadow-sm">
                     <i class="ri-calendar-event-line text-lg text-amber-500"></i>
                     <span><strong>說明：</strong> 紅色底色代表國定假日或週末。資料來源：內建行政院行事曆。</span>
                 </div>
@@ -215,25 +638,39 @@
 
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="processCSV(this)">
 
+    <!-- 🔧 雲端與系統連結設定（全部寫在同一支 index.html） -->
+    <script>
+        // 🚨 這三個請改成你實際的網址
+        // 1. Google Apps Script Web App URL
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
+
+        // 2. 訓練場地借用系統網址
+        const OTHER_SYSTEM_URL = "https://tfd-train.github.io/Facility-Booking/";
+
+        // 3. 整合首頁網址
+        const PORTAL_URL = "https://tfd-train.github.io/Training-Management-Platform/";
+    </script>
+
     <script>
         // === 1. 全域變數 ===
         let d1 = [], d2 = [], d3 = [];
-        let currentTab = 1; 
+        let currentTab = 1;
         let printActionType = '';
-        
+        let selectedMonthsForPrint = new Set();
+
         const nowYear = new Date().getFullYear();
         let currentYear = (nowYear >= 2025 && nowYear <= 2029) ? nowYear : 2025;
-        let pickerYear = currentYear; 
-        
+        let pickerYear = currentYear;
+
         // 內建假日表
         const builtInHolidays = {
-            '2025-1-1': true, '2025-1-25': true, '2025-1-26': true, '2025-1-27': true, '2025-1-28': true, 
-            '2025-1-29': true, '2025-1-30': true, '2025-1-31': true, '2025-2-1': true, '2025-2-2': true, 
-            '2025-2-28': true, '2025-4-3': true, '2025-4-4': true, '2025-4-5': true, '2025-4-6': true, 
-            '2025-5-30': true, '2025-5-31': true, '2025-6-1': true, '2025-10-4': true, '2025-10-5': true, 
-            '2025-10-6': true, '2025-10-10': true, '2025-10-11': true, '2025-10-12': true, 
-            '2026-1-1': true, '2026-2-16': true, '2026-2-17': true, '2026-2-18': true, '2026-2-19': true, 
-            '2026-2-20': true, '2026-2-28': true, '2026-4-4': true, '2026-4-5': true, '2026-6-19': true, 
+            '2025-1-1': true, '2025-1-25': true, '2025-1-26': true, '2025-1-27': true, '2025-1-28': true,
+            '2025-1-29': true, '2025-1-30': true, '2025-1-31': true, '2025-2-1': true, '2025-2-2': true,
+            '2025-2-28': true, '2025-4-3': true, '2025-4-4': true, '2025-4-5': true, '2025-4-6': true,
+            '2025-5-30': true, '2025-5-31': true, '2025-6-1': true, '2025-10-4': true, '2025-10-5': true,
+            '2025-10-6': true, '2025-10-10': true, '2025-10-11': true, '2025-10-12': true,
+            '2026-1-1': true, '2026-2-16': true, '2026-2-17': true, '2026-2-18': true, '2026-2-19': true,
+            '2026-2-20': true, '2026-2-28': true, '2026-4-4': true, '2026-4-5': true, '2026-6-19': true,
             '2026-9-25': true, '2026-10-10': true
         };
 
@@ -241,82 +678,176 @@
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
 
-        // === 2. 下載與匯出功能 (確保優先定義) ===
+        // === 判斷是否假日 / 週末 ===
+        function isDayOff(y, m, d) {
+            const key = `${y}-${m}-${d}`;
+            if (builtInHolidays[key]) return true;
+            const date = new Date(y, m - 1, d);
+            const day = date.getDay();
+            return day === 0 || day === 6;
+        }
+
+        // === 2. 下載與匯出功能 ===
         function downloadCSVTemplate() {
             try {
-                let csvContent = "\uFEFF"; 
-                if (currentTab === 1) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
-                else if (currentTab === 2) csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
-                else if (currentTab === 3) csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
+                let csvContent = "\uFEFF";
+                if (currentTab === 1) {
+                    csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,預計調用人數,是否提供跨縣市(TRUE/FALSE),新北,基隆,桃園,宜蘭,備註\n";
+                } else if (currentTab === 2) {
+                    csvContent += "月份,承辦單位,課程名稱,訓練對象,課程日期,上課地點,梯數,每梯人數,每天時數,每梯時數,調用教官人數,是否提供跨縣市(TRUE/FALSE),備註\n";
+                } else if (currentTab === 3) {
+                    csvContent += "承辦單位,活動名稱,參加對象,日期,天數,時數,每日調用人數,地點\n";
+                }
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 saveAs(blob, `附件${currentTab}_範本.csv`);
-            } catch(e) {
+            } catch (e) {
                 alert("下載失敗，請檢查瀏覽器是否支援: " + e);
             }
         }
 
         async function exportExcelJS(selM) {
             try {
-                const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('甘特圖');
-                sh.getColumn(1).width = 50; for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
-                sh.addRow([`${currentYear}年 班期 / 活動名稱`, ...Array.from({ length: 31 }, (_, k) => k + 1)]).eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } }; c.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' } });
-                
-                let rows = []; 
-                const parse = (r) => parseDateStr(r.date, r.ex);
-                
-                const add = (r, val, pre) => { 
+                const wb = new ExcelJS.Workbook();
+                const sh = wb.addWorksheet('甘特圖');
+                sh.getColumn(1).width = 50;
+                for (let k = 2; k <= 32; k++) sh.getColumn(k).width = 4;
+
+                const headerRow = sh.addRow([
+                    `${currentYear}年 班期 / 活動名稱`,
+                    ...Array.from({ length: 31 }, (_, k) => k + 1)
+                ]);
+                headerRow.eachCell(c => {
+                    c.font = { bold: true };
+                    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf8fafc' } };
+                    c.border = {
+                        top: { style: 'thin' }, left: { style: 'thin' },
+                        bottom: { style: 'thin' }, right: { style: 'thin' }
+                    };
+                    c.alignment = { horizontal: 'center' };
+                });
+
+                let rows = [];
+                const parse = (r) => parseDateStr(r.date, r.ex, currentYear);
+
+                const add = (r, val, pre) => {
                     let ds = parse(r);
-                    ds = ds.filter(d => d.y === currentYear); 
-                    let ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b); 
-                    ms.forEach(m => { rows.push({ m: m, n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`, ds: ds.filter(o => o.m == m).map(o => o.d), v: val }); }); 
+                    ds = ds.filter(d => d.y === currentYear);
+                    if (ds.length === 0) return;
+
+                    let ms = [...new Set(ds.map(o => o.m))].sort((a, b) => a - b);
+                    ms.forEach(m => {
+                        rows.push({
+                            m: m,
+                            n: `${r.date} ${r.name} ${val > 0 ? `(${pre}${val}人)` : ''}`,
+                            ds: ds.filter(o => o.m === m).map(o => o.d),
+                            v: val
+                        });
+                    });
                 };
-                
-                d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') }); 
-                d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官') }); 
-                d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用') });
-                
-                let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
+
+                d1.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用'); });
+                d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官'); });
+                d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用'); });
+
+                let grp = {};
+                for (let i = 1; i <= 12; i++) grp[i] = [];
+                rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r); });
 
                 selM.forEach(m => {
-                    if (grp[m].length === 0) return;
-                    let mt = sh.addRow([`${m} 月份`]); mt.font = { bold: true, size: 12 }; mt.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFe2e8f0' } };
+                    if (!grp[m] || grp[m].length === 0) return;
+
+                    let mt = sh.addRow([`${m} 月份`]);
+                    mt.font = { bold: true, size: 12 };
+                    mt.getCell(1).fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFe2e8f0' }
+                    };
+
                     let sum = Array(32).fill(0);
+
                     grp[m].forEach(r => {
                         let dVis = [r.n], dDat = [""];
                         for (let i = 1; i <= 31; i++) {
                             if (r.ds.includes(i)) {
                                 dVis.push("");
                                 let vShow = "";
-                                if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) { vShow = parseInt(r.v); }
+                                if (r.v !== '' && r.v != null && (parseInt(r.v) > 0 || r.v == '0' || r.v === 0)) {
+                                    vShow = parseInt(r.v);
+                                }
                                 dDat.push(vShow);
                                 sum[i] += parseInt(r.v) || 0;
-                            } else { dVis.push(""); dDat.push(""); }
+                            } else {
+                                dVis.push("");
+                                dDat.push("");
+                            }
                         }
-                        let rVis = sh.addRow(dVis); let rDat = sh.addRow(dDat);
-                        rVis.eachCell((c, col) => { c.border = { right: { style: 'thin' } }; if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3b82f6' } }; });
-                        rDat.eachCell((c, col) => { c.border = { bottom: { style: 'thick' }, right: { style: 'thin' }, left: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; if (col === 1) c.alignment = { horizontal: 'left', wrapText: true }; if (col > 1 && r.ds.includes(col - 1)) c.font = { bold: true }; });
+                        let rVis = sh.addRow(dVis);
+                        let rDat = sh.addRow(dDat);
+
+                        rVis.eachCell((c, col) => {
+                            c.border = { right: { style: 'thin' } };
+                            if (col === 1) c.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+                            if (col > 1 && r.ds.includes(col - 1)) {
+                                c.fill = {
+                                    type: 'pattern',
+                                    pattern: 'solid',
+                                    fgColor: { argb: 'FF3b82f6' }
+                                };
+                            }
+                        });
+                        rDat.eachCell((c, col) => {
+                            c.border = {
+                                bottom: { style: 'thick' },
+                                right: { style: 'thin' },
+                                left: { style: 'thin' }
+                            };
+                            c.alignment = { horizontal: 'center' };
+                            if (col === 1) c.alignment = { horizontal: 'left', wrapText: true };
+                            if (col > 1 && r.ds.includes(col - 1)) c.font = { bold: true };
+                        });
                         sh.mergeCells(rVis.number, 1, rDat.number, 1);
                     });
-                    let sd = ["每日統計"]; for (let i = 1; i <= 31; i++) sd.push(sum[i]);
+
+                    let sd = ["每日統計"];
+                    for (let i = 1; i <= 31; i++) sd.push(sum[i]);
                     let sr = sh.addRow(sd);
-                    sr.eachCell((c) => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf1f5f9' } }; c.font = { bold: true, color: { argb: 'FF1e40af' } }; c.border = { top: { style: 'double' }, bottom: { style: 'thick' }, left: { style: 'thin' }, right: { style: 'thin' } }; c.alignment = { horizontal: 'center' }; });
+                    sr.eachCell((c) => {
+                        c.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFf1f5f9' }
+                        };
+                        c.font = { bold: true, color: { argb: 'FF1e40af' } };
+                        c.border = {
+                            top: { style: 'double' },
+                            bottom: { style: 'thick' },
+                            left: { style: 'thin' },
+                            right: { style: 'thin' }
+                        };
+                        c.alignment = { horizontal: 'center' };
+                    });
                     sh.addRow([]);
                 });
-                const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), "甘特圖報表.xlsx");
-            } catch(e) { alert("Excel 下載失敗: " + e); }
+
+                const buf = await wb.xlsx.writeBuffer();
+                saveAs(new Blob([buf]), "甘特圖報表.xlsx");
+            } catch (e) {
+                alert("Excel 下載失敗: " + e);
+            }
         }
 
         function downloadPDF(selectedMonths) {
             try {
                 const element = document.getElementById('ganttExportArea');
-                const container = document.querySelector('.table-container');
-                if(!element || !container) { alert("找不到甘特圖元件"); return; }
+                const container = document.querySelector('.view-section#view4 .table-container');
+                if (!element || !container) { alert("找不到甘特圖元件"); return; }
 
                 const originalOverflow = container.style.overflow;
                 const originalWidth = container.style.width;
 
                 const originalTab = currentTab;
-                if(originalTab !== 4) switchTab(4); 
+                if (originalTab !== 4) switchTab(4);
 
                 if (selectedMonths) {
                     for (let m = 1; m <= 12; m++) {
@@ -343,119 +874,198 @@
 
                 setTimeout(() => {
                     html2pdf().set(opt).from(element).save()
-                    .then(() => {
-                        container.style.overflow = originalOverflow;
-                        container.style.width = originalWidth;
-                        for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                        showLoading(false);
-                        if(originalTab !== 4) switchTab(originalTab);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert("PDF 產生失敗: " + err);
-                        container.style.overflow = originalOverflow;
-                        container.style.width = originalWidth;
-                        for (let m = 1; m <= 12; m++) { let tb = document.getElementById(`month-${m}`); if (tb) tb.style.display = 'table-header-group'; }
-                        showLoading(false);
-                    });
-                }, 1000); // 等待 1 秒
-            } catch(e) { alert("PDF 初始化失敗: " + e); showLoading(false); }
+                        .then(() => {
+                            container.style.overflow = originalOverflow;
+                            container.style.width = originalWidth;
+                            for (let m = 1; m <= 12; m++) {
+                                let tb = document.getElementById(`month-${m}`);
+                                if (tb) tb.style.display = 'table-header-group';
+                            }
+                            showLoading(false);
+                            if (originalTab !== 4) switchTab(originalTab);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert("PDF 產生失敗: " + err);
+                            container.style.overflow = originalOverflow;
+                            container.style.width = originalWidth;
+                            for (let m = 1; m <= 12; m++) {
+                                let tb = document.getElementById(`month-${m}`);
+                                if (tb) tb.style.display = 'table-header-group';
+                            }
+                            showLoading(false);
+                        });
+                }, 800);
+            } catch (e) {
+                alert("PDF 初始化失敗: " + e);
+                showLoading(false);
+            }
         }
 
         // === 3. 核心渲染函式 ===
         function renderT1() {
-            const tb = document.getElementById('tbody1'); if(!tb) return; tb.innerHTML = '';
+            const tb = document.getElementById('tbody1'); if (!tb) return;
+            tb.innerHTML = '';
             d1.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(1,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td style="text-align:center">
+                    <button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(1,${i})">
+                        <i class="ri-close-circle-fill text-xl"></i>
+                    </button>
+                </td>
                 <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
                 <td><input type="text" id="m_1_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
                 <td><input type="text" value="${r.unit || ''}" onchange="d1[${i}].unit=this.value"></td>
                 <td class="align-left"><textarea onchange="d1[${i}].name=this.value">${r.name || ''}</textarea></td>
                 <td><input type="text" value="${r.target || ''}" onchange="d1[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(1,${i},this.value)" placeholder="點擊選取"><button class="btn-calendar" onclick="openDateModal(1,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td>
+                    <div class="date-cell">
+                        <input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(1,${i},this.value)" placeholder="點擊選取">
+                        <button class="btn-calendar" onclick="openDateModal(1,${i})"><i class="ri-calendar-line"></i></button>
+                    </div>
+                </td>
                 <td><input type="text" value="${r.loc || ''}" onchange="d1[${i}].loc=this.value"></td>
                 <td><input type="number" value="${r.batch || ''}" onchange="d1[${i}].batch=this.value"></td>
                 <td><input type="number" value="${r.pb || ''}" onchange="d1[${i}].pb=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">
+                    ${(r.batch * r.pb) || 0}
+                </td>
                 <td><input type="number" value="${r.dHour || ''}" onchange="d1[${i}].dHour=this.value"></td>
-                <td><input type="number" value="${r.bh || ''}" onchange="d1[${i}].bh=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bh) || 0}</td>
+                <td><input type="number" value="${r.bHour || ''}" onchange="d1[${i}].bHour=this.value"></td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">
+                    ${(r.batch * r.bHour) || 0}
+                </td>
                 <td class="col-blue-light"><input type="number" value="${r.mp || ''}" onchange="d1[${i}].mp=this.value"></td>
-                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d1[${i}].ext=this.checked"></td>
+                <td style="text-align:center">
+                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d1[${i}].ext=this.checked">
+                </td>
                 <td><input type="number" value="${r.nt || ''}" onchange="d1[${i}].nt=this.value"></td>
                 <td><input type="number" value="${r.kl || ''}" onchange="d1[${i}].kl=this.value"></td>
                 <td><input type="number" value="${r.ty || ''}" onchange="d1[${i}].ty=this.value"></td>
                 <td><input type="number" value="${r.yl || ''}" onchange="d1[${i}].yl=this.value"></td>
-                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d1[${i}].note=this.value"></td></tr>`;
+                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d1[${i}].note=this.value"></td>
+                </tr>`;
             });
         }
 
         function renderT2() {
-            const tb = document.getElementById('tbody2'); if(!tb) return; tb.innerHTML = '';
+            const tb = document.getElementById('tbody2'); if (!tb) return;
+            tb.innerHTML = '';
             d2.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(2,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td style="text-align:center">
+                    <button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(2,${i})">
+                        <i class="ri-close-circle-fill text-xl"></i>
+                    </button>
+                </td>
                 <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
                 <td><input type="text" id="m_2_${i}" value="${r.m || ''}" readonly style="background:#f8fafc;color:#64748b"></td>
                 <td><input type="text" value="${r.unit || ''}" onchange="d2[${i}].unit=this.value"></td>
                 <td class="align-left"><textarea onchange="d2[${i}].name=this.value">${r.name || ''}</textarea></td>
                 <td><input type="text" value="${r.target || ''}" onchange="d2[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(2,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(2,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td>
+                    <div class="date-cell">
+                        <input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(2,${i},this.value)">
+                        <button class="btn-calendar" onclick="openDateModal(2,${i})"><i class="ri-calendar-line"></i></button>
+                    </div>
+                </td>
                 <td><input type="text" value="${r.loc || ''}" onchange="d2[${i}].loc=this.value"></td>
                 <td><input type="number" value="${r.batch || ''}" onchange="d2[${i}].batch=this.value"></td>
                 <td><input type="number" value="${r.pb || ''}" onchange="d2[${i}].pb=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.pb) || 0}</td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">
+                    ${(r.batch * r.pb) || 0}
+                </td>
                 <td><input type="number" value="${r.dHour || ''}" onchange="d2[${i}].dHour=this.value"></td>
                 <td><input type="number" value="${r.bHour || ''}" onchange="d2[${i}].bHour=this.value"></td>
-                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">${(r.batch * r.bHour) || 0}</td>
+                <td style="background:#f8fafc;text-align:center;line-height:38px;color:#64748b">
+                    ${(r.batch * r.bHour) || 0}
+                </td>
                 <td><input type="number" value="${r.inst || ''}" onchange="d2[${i}].inst=this.value"></td>
-                <td style="text-align:center"><input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d2[${i}].ext=this.checked"></td>
-                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d2[${i}].note=this.value"></td></tr>`;
+                <td style="text-align:center">
+                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" ${r.ext ? 'checked' : ''} onchange="d2[${i}].ext=this.checked">
+                </td>
+                <td class="align-left"><input type="text" value="${r.note || ''}" onchange="d2[${i}].note=this.value"></td>
+                </tr>`;
             });
         }
 
         function renderT3() {
-            const tb = document.getElementById('tbody3'); if(!tb) return; tb.innerHTML = '';
+            const tb = document.getElementById('tbody3'); if (!tb) return;
+            tb.innerHTML = '';
             d3.forEach((r, i) => {
                 tb.innerHTML += `<tr>
-                <td style="text-align:center"><button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(3,${i})"><i class="ri-close-circle-fill text-xl"></i></button></td>
+                <td style="text-align:center">
+                    <button class="text-slate-300 hover:text-red-500 transition" onclick="delRow(3,${i})">
+                        <i class="ri-close-circle-fill text-xl"></i>
+                    </button>
+                </td>
                 <td><input type="text" value="${i + 1}" readonly style="color:#94a3b8"></td>
                 <td><input type="text" value="${r.unit || ''}" onchange="d3[${i}].unit=this.value"></td>
                 <td class="align-left"><textarea onchange="d3[${i}].name=this.value">${r.name || ''}</textarea></td>
                 <td><input type="text" value="${r.target || ''}" onchange="d3[${i}].target=this.value"></td>
-                <td><div class="date-cell"><input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(3,${i},this.value)"><button class="btn-calendar" onclick="openDateModal(3,${i})"><i class="ri-calendar-line"></i></button></div></td>
+                <td>
+                    <div class="date-cell">
+                        <input type="text" value="${r.date || ''}" onchange="updateMonthFromDate(3,${i},this.value)">
+                        <button class="btn-calendar" onclick="openDateModal(3,${i})"><i class="ri-calendar-line"></i></button>
+                    </div>
+                </td>
                 <td><input type="number" value="${r.days || ''}" onchange="d3[${i}].days=this.value"></td>
                 <td><input type="number" value="${r.hours || ''}" onchange="d3[${i}].hours=this.value"></td>
                 <td class="col-red-light"><input type="number" value="${r.mp || ''}" onchange="d3[${i}].mp=this.value"></td>
-                <td class="align-left"><input type="text" value="${r.loc || ''}" onchange="d3[${i}].loc=this.value"></td></tr>`;
+                <td class="align-left"><input type="text" value="${r.loc || ''}" onchange="d3[${i}].loc=this.value"></td>
+                </tr>`;
             });
         }
 
-        function renderAll() { renderT1(); renderT2(); renderT3(); }
+        function renderAll() {
+            renderT1();
+            renderT2();
+            renderT3();
+        }
 
         // === 事件與輔助 ===
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('hidden'); sidebar.classList.toggle('absolute'); sidebar.classList.toggle('h-full');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('absolute');
+            sidebar.classList.toggle('h-full');
         }
 
-        function updateMonthFromDate(t, i, val) { 
-            let match = val.match(/^(\d+)\//); 
-            if (match) { 
-                let m = match[1]; 
-                if (t === 1) d1[i].m = m; if (t === 2) d2[i].m = m; 
-                const mEl = document.getElementById(`m_${t}_${i}`); if(mEl) mEl.value = m; 
-            } 
-            if (t === 1) d1[i].date = val; 
-            if (t === 2) d2[i].date = val; 
-            if (t === 3) d3[i].date = val; 
+        function updateMonthFromDate(t, i, val) {
+            let match = val.match(/^(\d+)\//);
+            if (match) {
+                let m = match[1];
+                if (t === 1) d1[i].m = m;
+                if (t === 2) d2[i].m = m;
+                const mEl = document.getElementById(`m_${t}_${i}`);
+                if (mEl) mEl.value = m;
+            }
+            if (t === 1) d1[i].date = val;
+            if (t === 2) d2[i].date = val;
+            if (t === 3) d3[i].date = val;
         }
 
         function addRow(t) {
-            if (t === 1) d1.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', mp: 0, ext: false, nt: '', kl: '', ty: '', yl: '', note: '', ex: [], isNew: true });
-            if (t === 2) d2.push({ m: '', unit: '', name: '', target: '', date: '', loc: '', batch: '', pb: '', inst: 0, ext: false, note: '', ex: [], isNew: true });
-            if (t === 3) d3.push({ unit: '', name: '', target: '', date: '', days: '', hours: '', mp: 0, loc: '', ex: [], isNew: true });
+            if (t === 1) d1.push({
+                m: '', unit: '', name: '', target: '', date: '', loc: '',
+                batch: '', pb: '',
+                dHour: '', bHour: '',
+                mp: 0, ext: false,
+                nt: '', kl: '', ty: '', yl: '',
+                note: '', ex: [], isNew: true
+            });
+            if (t === 2) d2.push({
+                m: '', unit: '', name: '', target: '', date: '', loc: '',
+                batch: '', pb: '',
+                dHour: '', bHour: '',
+                inst: 0, ext: false,
+                note: '', ex: [], isNew: true
+            });
+            if (t === 3) d3.push({
+                unit: '', name: '', target: '', date: '',
+                days: '', hours: '', mp: 0,
+                loc: '', ex: [], isNew: true
+            });
             renderAll();
         }
 
@@ -473,26 +1083,37 @@
 
         function switchTab(idx, el) {
             const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(e => { e.classList.remove('bg-blue-600/20', 'text-blue-300', 'border-blue-500/30'); e.classList.add('text-slate-400'); });
-            if(el) { el.classList.remove('text-slate-400'); el.classList.add('bg-blue-600/20', 'text-blue-300', 'border', 'border-blue-500/30'); }
-            else {
+            navItems.forEach(e => {
+                e.classList.remove('bg-blue-600/20', 'text-blue-300', 'border', 'border-blue-500/30');
+                e.classList.add('text-slate-400');
+            });
+            if (el) {
+                el.classList.remove('text-slate-400');
+                el.classList.add('bg-blue-600/20', 'text-blue-300', 'border', 'border-blue-500/30');
+            } else {
                 const sidebar = document.getElementById('sidebar');
-                if(sidebar) { const btn = sidebar.querySelectorAll('.nav-item')[idx-1]; if(btn) btn.classList.add('bg-blue-600/20', 'text-blue-300'); }
+                if (sidebar) {
+                    const btn = sidebar.querySelectorAll('.nav-item')[idx - 1];
+                    if (btn) btn.classList.add('bg-blue-600/20', 'text-blue-300');
+                }
             }
 
             document.querySelectorAll('.view-section').forEach(e => e.classList.add('hidden'));
             const view = document.getElementById(`view${idx}`);
-            if(view) view.classList.remove('hidden');
-            
+            if (view) view.classList.remove('hidden');
+
             currentTab = idx;
             const titles = ["附件1 - 消防人員", "附件2 - 非消防人員", "附件3 - 重大活動", "甘特圖"];
             const pageTitle = document.getElementById('pageTitle');
-            if(pageTitle) pageTitle.innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> ${titles[idx - 1]}`;
+            if (pageTitle) pageTitle.innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> ${titles[idx - 1]}`;
             const mobileTitle = document.getElementById('mobilePageTitle');
-            if(mobileTitle) mobileTitle.innerText = titles[idx - 1].replace(/附件\d - /, '');
-            
+            if (mobileTitle) mobileTitle.innerText = titles[idx - 1].replace(/附件\d - /, '');
+
             const yearSelector = document.getElementById('yearSelectorContainer');
-            if(yearSelector) { if (idx === 4) yearSelector.classList.remove('hidden'); else yearSelector.classList.add('hidden'); }
+            if (yearSelector) {
+                if (idx === 4) yearSelector.classList.remove('hidden');
+                else yearSelector.classList.add('hidden');
+            }
 
             updateToolbar();
             if (idx === 4) renderGantt();
@@ -500,7 +1121,7 @@
 
         function updateToolbar() {
             const bar = document.getElementById('toolbar');
-            if(!bar) return;
+            if (!bar) return;
             let html = '';
             const btnBase = "px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition whitespace-nowrap";
             const btnLight = `${btnBase} bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-blue-600`;
@@ -519,42 +1140,118 @@
             bar.innerHTML = html;
         }
 
-        function showLoading(s, t) { 
-            const ld = document.getElementById('loading'); if(ld) ld.style.display = s ? 'flex' : 'none'; 
-            const txt = document.getElementById('loadText'); if(txt && t) txt.innerText = t; 
+        function showLoading(s, t) {
+            const ld = document.getElementById('loading'); if (ld) ld.style.display = s ? 'flex' : 'none';
+            const txt = document.getElementById('loadText'); if (txt && t) txt.innerText = t;
         }
 
         // === 雲端存取 ===
         function loadData() {
-            if (GAS_API_URL.includes("請填入")) { if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3); return; }
-            showLoading(true, "同步雲端...");
-            fetch(GAS_API_URL).then(r => r.json()).then(res => {
-                if (res.status === 'success') {
-                    d1 = (res.d1&&res.d1.length>0) ? res.d1.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], mp: r[12], ext: r[13]==='true', nt: r[14], kl: r[15], ty: r[16], yl: r[17], note: r[18], ex: JSON.parse(r[19]||'[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
-                    d2 = (res.d2&&res.d2.length>0) ? res.d2.map(r => ({ m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5], batch: r[6], pb: r[7], inst: r[12], ext: r[13]==='true', note: r[14], ex: JSON.parse(r[15]||'[]'), isNew: false, dHour: r[9], bHour: r[10] })) : [];
-                    d3 = (res.d3&&res.d3.length>0) ? res.d3.map(r => ({ unit: r[0], name: r[1], target: r[2], date: r[3], days: r[4], hours: r[5], mp: r[6], loc: r[7], ex: JSON.parse(r[8]||'[]'), isNew: false })) : [];
+            try {
+                if (!GAS_API_URL || GAS_API_URL.includes("請填入")) {
+                    if (d1.length === 0) addRow(1);
+                    if (d2.length === 0) addRow(2);
+                    if (d3.length === 0) addRow(3);
+                    return;
                 }
-                if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3);
+            } catch (e) {
+                if (d1.length === 0) addRow(1);
+                if (d2.length === 0) addRow(2);
+                if (d3.length === 0) addRow(3);
                 renderAll();
-            }).catch(e => { console.error(e); if(d1.length===0) addRow(1); if(d2.length===0) addRow(2); if(d3.length===0) addRow(3); renderAll(); })
-            .finally(() => showLoading(false));
+                return;
+            }
+
+            showLoading(true, "同步雲端...");
+            fetch(GAS_API_URL)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        d1 = (res.d1 && res.d1.length > 0) ? res.d1.map(r => ({
+                            m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5],
+                            batch: r[6], pb: r[7],
+                            dHour: r[9], bHour: r[10],
+                            mp: r[12], ext: r[13] === 'true',
+                            nt: r[14], kl: r[15], ty: r[16], yl: r[17],
+                            note: r[18], ex: JSON.parse(r[19] || '[]'),
+                            isNew: false
+                        })) : [];
+                        d2 = (res.d2 && res.d2.length > 0) ? res.d2.map(r => ({
+                            m: r[0], unit: r[1], name: r[2], target: r[3], date: r[4], loc: r[5],
+                            batch: r[6], pb: r[7],
+                            dHour: r[9], bHour: r[10],
+                            inst: r[12], ext: r[13] === 'true',
+                            note: r[14], ex: JSON.parse(r[15] || '[]'),
+                            isNew: false
+                        })) : [];
+                        d3 = (res.d3 && res.d3.length > 0) ? res.d3.map(r => ({
+                            unit: r[0], name: r[1], target: r[2], date: r[3],
+                            days: r[4], hours: r[5], mp: r[6], loc: r[7],
+                            ex: JSON.parse(r[8] || '[]'), isNew: false
+                        })) : [];
+                    }
+                    if (d1.length === 0) addRow(1);
+                    if (d2.length === 0) addRow(2);
+                    if (d3.length === 0) addRow(3);
+                    renderAll();
+                })
+                .catch(e => {
+                    console.error(e);
+                    if (d1.length === 0) addRow(1);
+                    if (d2.length === 0) addRow(2);
+                    if (d3.length === 0) addRow(3);
+                    renderAll();
+                })
+                .finally(() => showLoading(false));
         }
 
         function saveData() {
             showLoading(true, "儲存中...");
-            const p1 = d1.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.mp, r.ext, r.nt, r.kl, r.ty, r.yl, r.note, JSON.stringify(r.ex)]);
-            const p2 = d2.map(r => [r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb, (r.batch*r.pb)||0, r.dHour, r.bHour, (r.batch*r.bHour)||0, r.inst, r.ext, r.note, JSON.stringify(r.ex)]);
-            const p3 = d3.map(r => [r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc, JSON.stringify(r.ex)]);
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ d1: p1, d2: p2, d3: p3 }), headers: { 'Content-Type': 'text/plain' } })
-                .then(r => r.json()).then(res => { if (res.status === 'success') { alert(res.message); loadData(); } else alert("錯誤: " + res.message); })
-                .catch(e => alert("存檔失敗"))
+            const p1 = d1.map(r => [
+                r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb,
+                (r.batch * r.pb) || 0,
+                r.dHour, r.bHour,
+                (r.batch * r.bHour) || 0,
+                r.mp, r.ext,
+                r.nt, r.kl, r.ty, r.yl, r.note,
+                JSON.stringify(r.ex)
+            ]);
+            const p2 = d2.map(r => [
+                r.m, r.unit, r.name, r.target, r.date, r.loc, r.batch, r.pb,
+                (r.batch * r.pb) || 0,
+                r.dHour, r.bHour,
+                (r.batch * r.bHour) || 0,
+                r.inst, r.ext, r.note, JSON.stringify(r.ex)
+            ]);
+            const p3 = d3.map(r => [
+                r.unit, r.name, r.target, r.date, r.days, r.hours, r.mp, r.loc, JSON.stringify(r.ex)
+            ]);
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ d1: p1, d2: p2, d3: p3 }),
+                headers: { 'Content-Type': 'text/plain' }
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        alert(res.message || "已儲存完成");
+                        loadData();
+                    } else {
+                        alert("錯誤: " + res.message);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    alert("存檔失敗，請稍後再試");
+                })
                 .finally(() => showLoading(false));
         }
 
         function processCSV(input) {
             if (!input.files[0]) return;
             const file = input.files[0];
-            
+
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
@@ -563,7 +1260,7 @@
                     let currentData = (currentTab === 1) ? d1 : (currentTab === 2 ? d2 : d3);
                     let hasData = currentData.length > 1 || (currentData.length === 1 && (currentData[0].unit !== '' || currentData[0].date !== ''));
                     let shouldClear = false;
-                    
+
                     if (hasData) {
                         if (confirm("⚠️ 表格內已有資料！\n\n按「確定」：清除現有資料，只保留匯入的檔案 (覆蓋模式)。\n按「取消」：保留現有資料，將檔案加在最後面 (附加模式)。")) {
                             shouldClear = true;
@@ -577,26 +1274,80 @@
                     }
 
                     if (currentTab === 1) {
-                        data.forEach(r => { d1.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', mp: r['預計調用人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', nt: r['新北']||'', kl: r['基隆']||'', ty: r['桃園']||'', yl: r['宜蘭']||'', note: r['備註']||'', ex: [], isNew: true }); });
+                        data.forEach(r => {
+                            d1.push({
+                                m: r['月份'] || '',
+                                unit: r['承辦單位'] || '',
+                                name: r['課程名稱'] || '',
+                                target: r['訓練對象'] || '',
+                                date: r['課程日期'] || '',
+                                loc: r['上課地點'] || '',
+                                batch: r['梯數'] || '',
+                                pb: r['每梯人數'] || '',
+                                dHour: r['每天時數'] || '',
+                                bHour: r['每梯時數'] || '',
+                                mp: r['預計調用人數'] || '',
+                                ext: (r['是否提供跨縣市(TRUE/FALSE)'] || '').toUpperCase() === 'TRUE',
+                                nt: r['新北'] || '',
+                                kl: r['基隆'] || '',
+                                ty: r['桃園'] || '',
+                                yl: r['宜蘭'] || '',
+                                note: r['備註'] || '',
+                                ex: [],
+                                isNew: true
+                            });
+                        });
                         renderT1();
                     } else if (currentTab === 2) {
-                        data.forEach(r => { d2.push({ m: r['月份']||'', unit: r['承辦單位']||'', name: r['課程名稱']||'', target: r['訓練對象']||'', date: r['課程日期']||'', loc: r['上課地點']||'', batch: r['梯數']||'', pb: r['每梯人數']||'', dHour: r['每天時數']||'', bHour: r['每梯時數']||'', inst: r['調用教官人數']||'', ext: (r['是否提供跨縣市(TRUE/FALSE)']||'').toUpperCase()==='TRUE', note: r['備註']||'', ex: [], isNew: true }); });
+                        data.forEach(r => {
+                            d2.push({
+                                m: r['月份'] || '',
+                                unit: r['承辦單位'] || '',
+                                name: r['課程名稱'] || '',
+                                target: r['訓練對象'] || '',
+                                date: r['課程日期'] || '',
+                                loc: r['上課地點'] || '',
+                                batch: r['梯數'] || '',
+                                pb: r['每梯人數'] || '',
+                                dHour: r['每天時數'] || '',
+                                bHour: r['每梯時數'] || '',
+                                inst: r['調用教官人數'] || '',
+                                ext: (r['是否提供跨縣市(TRUE/FALSE)'] || '').toUpperCase() === 'TRUE',
+                                note: r['備註'] || '',
+                                ex: [],
+                                isNew: true
+                            });
+                        });
                         renderT2();
                     } else if (currentTab === 3) {
-                        data.forEach(r => { d3.push({ unit: r['承辦單位']||'', name: r['活動名稱']||'', target: r['參加對象']||'', date: r['日期']||'', days: r['天數']||'', hours: r['時數']||'', mp: r['每日調用人數']||'', loc: r['地點']||'', ex: [], isNew: true }); });
+                        data.forEach(r => {
+                            d3.push({
+                                unit: r['承辦單位'] || '',
+                                name: r['活動名稱'] || '',
+                                target: r['參加對象'] || '',
+                                date: r['日期'] || '',
+                                days: r['天數'] || '',
+                                hours: r['時數'] || '',
+                                mp: r['每日調用人數'] || '',
+                                loc: r['地點'] || '',
+                                ex: [],
+                                isNew: true
+                            });
+                        });
                         renderT3();
                     }
-                    input.value = ''; 
+                    input.value = '';
                     alert(shouldClear ? "資料已覆蓋匯入" : "資料已附加匯入");
                 }
             });
         }
 
         // === 6. 智慧年份與日期解析 ===
-        function parseDateStr(str, excludeList) {
+        function parseDateStr(str, excludeList, baseYear) {
             let results = [];
             if (!str) return results;
-            
+            if (!baseYear) baseYear = currentYear;
+
             try {
                 let specificYear = null;
                 let yearMatch = str.match(/(?:^|[^\d])(11[4-9]|12[0-9]|202[5-9])[年\/\.]/);
@@ -608,7 +1359,7 @@
                 let s = str.trim()
                     .replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))
                     .replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
-                    .replace(/11[3-6]年/g, '') 
+                    .replace(/11[3-6]年/g, '')
                     .replace(/202[4-7]年/g, '')
                     .replace(/月/g, '/')
                     .replace(/日/g, '')
@@ -617,13 +1368,12 @@
                     .trim();
 
                 let tokens = s.split(/\s+/);
-                let currentMonth = null; 
-                const today = new Date();
-                let baseYear = specificYear;
+                let currentMonth = null;
 
-                if (!baseYear) {
-                    baseYear = today.getFullYear();
-                }
+                const checkDate = (m, d) => {
+                    if (specificYear) return specificYear;
+                    return baseYear;
+                };
 
                 tokens.forEach(token => {
                     if (!token) return;
@@ -635,18 +1385,11 @@
 
                     if (!currentMonth && !explicitMonthMatch) return;
 
-                    let checkDate = (m, d) => {
-                        if (specificYear) return specificYear; 
-                        let tempDate = new Date(today.getFullYear(), m - 1, d);
-                        if (tempDate < today) return today.getFullYear() + 1; 
-                        return today.getFullYear(); 
-                    };
-
                     let crossMatch = token.match(/(\d+)[\/.](\d+)-(\d+)[\/.](\d+)/);
                     if (crossMatch) {
                         let m1 = parseInt(crossMatch[1]), d1 = parseInt(crossMatch[2]);
                         let m2 = parseInt(crossMatch[3]), d2 = parseInt(crossMatch[4]);
-                        let y = checkDate(m1, d1); 
+                        let y = checkDate(m1, d1);
                         let cur = new Date(y, m1 - 1, d1);
                         let end = new Date(y, m2 - 1, d2);
                         if (end < cur) end.setFullYear(y + 1);
@@ -656,7 +1399,7 @@
                                 cur.setDate(cur.getDate() + 1);
                             }
                         }
-                        currentMonth = m2; 
+                        currentMonth = m2;
                         return;
                     }
 
@@ -707,7 +1450,9 @@
                     results = results.filter(o => !excludeList.includes(o.d));
                 }
 
-            } catch (e) { console.error("日期解析失敗:", e); }
+            } catch (e) {
+                console.error("日期解析失敗:", e);
+            }
             return results;
         }
 
@@ -715,8 +1460,8 @@
         function renderGantt() {
             const table = document.getElementById('table4');
             const container = document.getElementById('ganttContainer');
-            if(!table || !container) return;
-            
+            if (!table || !container) return;
+
             let headerHTML = `<tr id="ganttHeader"><th class="col-fix-name">${currentYear}年 班期 / 活動名稱</th>`;
             for (let i = 1; i <= 31; i++) headerHTML += `<th class="col-fix-day">${i}</th>`;
             headerHTML += '</tr>';
@@ -732,12 +1477,11 @@
 
             const newContainer = document.getElementById('ganttContainer');
             let rows = [];
-            const parse = (r) => parseDateStr(r.date, r.ex);
+            const parse = (r) => parseDateStr(r.date, r.ex, currentYear);
 
             const add = (r, val, prefix) => {
                 let daysSet = parse(r);
                 daysSet = daysSet.filter(d => d.y === currentYear);
-
                 if (daysSet.length === 0) return;
 
                 let involvedMonths = [...new Set(daysSet.map(o => o.m))].sort((a, b) => a - b);
@@ -752,11 +1496,12 @@
             d2.forEach(r => { if (r.date && r.inst) add(r, r.inst, '教官'); });
             d3.forEach(r => { if (r.date && r.mp) add(r, r.mp, '調用'); });
 
-            let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = []; rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r) });
+            let grp = {}; for (let i = 1; i <= 12; i++) grp[i] = [];
+            rows.forEach(r => { if (grp[r.m]) grp[r.m].push(r); });
 
             for (let m = 1; m <= 12; m++) {
-                if (grp[m].length === 0) continue;
-                
+                if (!grp[m] || grp[m].length === 0) continue;
+
                 let tbody = document.createElement('tbody');
                 tbody.className = 'gantt-month-group';
                 tbody.id = `month-${m}`;
@@ -799,52 +1544,48 @@
             }
         }
 
-        // === 8. 日曆 Modal (獨立操作) ===
+        // === 8. 日曆 Modal ===
         function openDateModal(t, i) {
             currentEdit = { t, i };
             const val = t === 1 ? d1[i].date : t === 2 ? d2[i].date : d3[i].date;
             selectedDates.clear();
 
-            const parsed = parseDateStr(val);
-            // 如果沒有日期，或第一個日期是今年，就預設選中今年
-            // 如果有日期且是其他年份，就讓日曆跳到該年份
+            const parsed = parseDateStr(val, null, pickerYear);
             if (parsed.length > 0) {
                 pickerYear = parsed[0].y;
                 currentCalendarMonth = parsed[0].m;
             } else {
-                pickerYear = nowYear; // 預設跳到今天
+                pickerYear = nowYear;
                 currentCalendarMonth = new Date().getMonth() + 1;
             }
-            
-            // 更新選取狀態
+
             parsed.forEach(o => {
-                if(o.y === pickerYear) selectedDates.add(`${o.m}-${o.d}`);
+                if (o.y === pickerYear) selectedDates.add(`${o.m}-${o.d}`);
             });
 
-            // 更新下拉選單
             document.getElementById('pickerYearSelect').value = pickerYear;
 
             renderCalendar();
             document.getElementById('dateModal').classList.remove('hidden');
             document.getElementById('dateModal').classList.add('flex');
         }
-        
+
         function changePickerYear(val) {
             pickerYear = parseInt(val);
-            selectedDates.clear(); // 切換年份時清空選取
+            selectedDates.clear();
             renderCalendar();
         }
 
         function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
+            const el = document.getElementById(id);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
         }
 
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-            
-            // 標題區
+
             const header = document.createElement('div');
             header.className = "col-span-7 flex justify-between items-center mb-2";
             header.innerHTML = `
@@ -861,7 +1602,7 @@
                 div.innerText = d;
                 grid.appendChild(div);
             });
-            
+
             const daysInMonth = new Date(pickerYear, currentCalendarMonth, 0).getDate();
             const firstDay = new Date(pickerYear, currentCalendarMonth - 1, 1).getDay();
 
@@ -874,15 +1615,25 @@
                 const key = `${currentCalendarMonth}-${d}`;
                 const isActive = selectedDates.has(key);
                 const isHoliday = isDayOff(pickerYear, currentCalendarMonth, d);
-                const holidayClass = isHoliday ? (builtInHolidays[`${pickerYear}-${currentCalendarMonth}-${d}`] ? 'text-red-600 font-bold bg-red-50 border-red-200' : 'text-red-500 bg-slate-50') : '';
+                const holidayClass = isHoliday
+                    ? (builtInHolidays[`${pickerYear}-${currentCalendarMonth}-${d}`]
+                        ? 'text-red-600 font-bold bg-red-50 border-red-200'
+                        : 'text-red-500 bg-slate-50')
+                    : '';
                 const btn = document.createElement('div');
                 btn.className = `day-btn ${isActive ? 'active' : ''} ${holidayClass}`;
                 btn.innerText = d;
-                btn.onclick = () => { if (selectedDates.has(key)) selectedDates.delete(key); else selectedDates.add(key); renderCalendar(); updateModalRangeText(); };
+                btn.onclick = () => {
+                    if (selectedDates.has(key)) selectedDates.delete(key);
+                    else selectedDates.add(key);
+                    renderCalendar();
+                };
                 grid.appendChild(btn);
             }
+
+            updateModalRangeText();
         }
-        
+
         function changeMonth(delta) {
             currentCalendarMonth += delta;
             if (currentCalendarMonth < 1) { currentCalendarMonth = 12; pickerYear--; }
@@ -892,7 +1643,8 @@
         }
 
         function updateModalRangeText() {
-            document.getElementById('modalRangeText').innerText = `已選取 ${selectedDates.size} 天`;
+            const text = document.getElementById('modalRangeText');
+            if (text) text.innerText = `已選取 ${selectedDates.size} 天`;
         }
 
         function applyDateFilter(type) {
@@ -902,53 +1654,156 @@
                 const isHoliday = isDayOff(pickerYear, currentCalendarMonth, d);
                 if (type === 'all') selectedDates.add(key);
                 else if (type === 'clear') selectedDates.delete(key);
-                else if (type === 'no-weekend') { if (!isHoliday) selectedDates.add(key); else selectedDates.delete(key); }
-                else if (type === 'only-weekend') { if (isHoliday) selectedDates.add(key); else selectedDates.delete(key); }
+                else if (type === 'no-weekend') {
+                    if (!isHoliday) selectedDates.add(key); else selectedDates.delete(key);
+                } else if (type === 'only-weekend') {
+                    if (isHoliday) selectedDates.add(key); else selectedDates.delete(key);
+                }
             }
             renderCalendar();
         }
 
         function saveDateModal() {
             if (!currentEdit) return;
-            // 排序邏輯：先月份、再日期
             const sorted = [...selectedDates].map(s => {
                 const [m, d] = s.split('-').map(Number);
                 return { m, d, val: m * 100 + d };
             }).sort((a, b) => a.val - b.val);
 
             let str = "";
-            // 判斷是否需要加上年份前綴
-            // 規則：如果選的年份 不是「今年」且 不是「自動判斷的明年」，則強制加上年份
-            const todayYear = new Date().getFullYear();
-            const needsYearPrefix = (pickerYear !== todayYear && pickerYear !== todayYear + 1);
-            const prefix = needsYearPrefix ? `${pickerYear-1911}年` : "";
+            const needsYearPrefix = (pickerYear !== currentYear);
+            const prefix = needsYearPrefix ? `${pickerYear - 1911}年` : "";
 
             if (sorted.length > 0) {
-                let groups = {}; sorted.forEach(o => { if (!groups[o.m]) groups[o.m] = []; groups[o.m].push(o.d); });
+                let groups = {};
+                sorted.forEach(o => {
+                    if (!groups[o.m]) groups[o.m] = [];
+                    groups[o.m].push(o.d);
+                });
                 let parts = [];
                 for (let m in groups) {
                     let days = groups[m];
-                    let ranges = []; let start = days[0], prev = days[0];
+                    let ranges = [];
+                    let start = days[0], prev = days[0];
                     for (let i = 1; i < days.length; i++) {
-                        if (days[i] === prev + 1) prev = days[i];
-                        else { ranges.push(start === prev ? `${start}` : `${start}-${prev}`); start = days[i]; prev = days[i]; }
+                        if (days[i] === prev + 1) {
+                            prev = days[i];
+                        } else {
+                            ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+                            start = days[i];
+                            prev = days[i];
+                        }
                     }
                     ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
                     parts.push(`${m}/${ranges.join('、')}`);
                 }
                 str = prefix + parts.join(', ');
             }
+
             const { t, i } = currentEdit;
-            if (t === 1) d1[i].date = str; if (t === 2) d2[i].date = str; if (t === 3) d3[i].date = str;
-            updateMonthFromDate(t, i, str); renderAll(); closeModal('dateModal');
+            if (t === 1) d1[i].date = str;
+            if (t === 2) d2[i].date = str;
+            if (t === 3) d3[i].date = str;
+
+            updateMonthFromDate(t, i, str);
+            renderAll();
+            closeModal('dateModal');
+        }
+
+        // === 甘特圖年分切換 ===
+        function changeYear(val) {
+            currentYear = parseInt(val);
+            renderGantt();
+        }
+
+        // === 列印 / 匯出月份選擇 ===
+        function openPrintModal(type) {
+            printActionType = type;
+            // 確保甘特圖是最新的
+            if (currentTab !== 4) {
+                switchTab(4);
+            } else {
+                renderGantt();
+            }
+
+            selectedMonthsForPrint = new Set();
+            for (let m = 1; m <= 12; m++) {
+                const tb = document.getElementById(`month-${m}`);
+                if (tb) selectedMonthsForPrint.add(m);
+            }
+            buildPrintMonthGrid();
+
+            const modal = document.getElementById('printModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function buildPrintMonthGrid() {
+            const grid = document.getElementById('printMonthGrid');
+            grid.innerHTML = '';
+            for (let m = 1; m <= 12; m++) {
+                const hasData = document.getElementById(`month-${m}`) != null;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'month-select-btn';
+                if (!hasData) {
+                    btn.classList.add('opacity-40');
+                }
+                if (selectedMonthsForPrint.has(m)) {
+                    btn.classList.add('selected');
+                }
+                btn.innerText = `${m} 月`;
+                btn.onclick = () => {
+                    if (!hasData) return;
+                    if (selectedMonthsForPrint.has(m)) selectedMonthsForPrint.delete(m);
+                    else selectedMonthsForPrint.add(m);
+                    buildPrintMonthGrid();
+                };
+                grid.appendChild(btn);
+            }
+        }
+
+        function toggleAllMonths() {
+            let allSelected = true;
+            for (let m = 1; m <= 12; m++) {
+                const tb = document.getElementById(`month-${m}`);
+                if (tb && !selectedMonthsForPrint.has(m)) {
+                    allSelected = false;
+                    break;
+                }
+            }
+            if (allSelected) {
+                selectedMonthsForPrint.clear();
+            } else {
+                selectedMonthsForPrint.clear();
+                for (let m = 1; m <= 12; m++) {
+                    const tb = document.getElementById(`month-${m}`);
+                    if (tb) selectedMonthsForPrint.add(m);
+                }
+            }
+            buildPrintMonthGrid();
+        }
+
+        function executePrintOrExport() {
+            const months = Array.from(selectedMonthsForPrint).sort((a, b) => a - b);
+            if (months.length === 0) {
+                alert("請至少選擇一個月份");
+                return;
+            }
+            closeModal('printModal');
+            if (printActionType === 'excel') {
+                exportExcelJS(months);
+            } else if (printActionType === 'download') {
+                downloadPDF(months);
+            }
         }
 
         // Window Onload
-        window.onload = function () { 
+        window.onload = function () {
             const yearSelect = document.getElementById('yearSelect');
-            if(yearSelect) yearSelect.value = currentYear;
-            updateToolbar(); 
-            loadData(); 
+            if (yearSelect) yearSelect.value = currentYear;
+            updateToolbar();
+            loadData();
         };
     </script>
 </body>
