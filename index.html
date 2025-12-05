@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>訓練流路管理系統</title>
 
-    <!-- 1. 載入核心工具庫 (請保持網路連線) -->
+    <!-- 1. 載入核心工具庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -74,7 +74,7 @@
             #table4 { width: 1232px !important; min-width: 1232px !important; table-layout: fixed !important; }
             .col-fix-name { width: 300px !important; }
             .col-fix-day { width: 30px !important; padding: 0 !important; }
-            table, th, td { border: 1px solid #000 !記得!important; }
+            table, th, td { border: 1px solid #000 !important; }
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
@@ -134,16 +134,30 @@
             <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg"><i class="ri-flow-chart text-white"></i></div>
             <div><h1 class="font-bold text-lg tracking-wide">訓練流路</h1><p class="text-xs text-slate-400">訓練中心內部系統</p></div>
         </div>
+        
+        <!-- 導覽功能 -->
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <div onclick="switchTab(1, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 flex items-center gap-3 hover:bg-blue-600 hover:text-white transition"><i class="ri-user-fire-line text-xl"></i> 消防人員</div>
             <div onclick="switchTab(2, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-group-line text-xl"></i> 非消防人員</div>
             <div onclick="switchTab(3, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-flag-line text-xl"></i> 重大活動</div>
             <div onclick="switchTab(4, this)" class="nav-item cursor-pointer w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition"><i class="ri-bar-chart-horizontal-line text-xl"></i> 甘特圖</div>
         </nav>
+
+        <!-- 系統切換 -->
         <div class="p-4 border-t border-slate-800 space-y-2 bg-slate-900">
             <div class="text-[10px] text-slate-500 font-bold px-4 mb-1 uppercase tracking-wider">系統切換</div>
-            <a href="javascript:void(0)" onclick="location.href=OTHER_SYSTEM_URL" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm"><i class="ri-building-2-fill text-lg text-indigo-400"></i> 場地借用系統</a>
-            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL" class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition text-xs"><i class="ri-arrow-left-line"></i> 回整合首頁</a>
+            
+            <a href="https://tfd-train.github.io/Facility-Booking/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                <i class="ri-building-2-fill text-lg text-indigo-400"></i> 場地借用系統
+            </a>
+            
+            <a href="https://tfd-train.github.io/Electric-Vehicle/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                <i class="ri-charging-pile-2-fill text-lg text-emerald-400"></i> 電動車訓練統計
+            </a>
+
+            <a href="https://tfd-train.github.io/Training-Management-Platform/" class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition text-xs">
+                <i class="ri-arrow-left-line"></i> 回整合首頁
+            </a>
         </div>
     </aside>
 
@@ -151,7 +165,7 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-100">
         <div class="mobile-header bg-white md:hidden h-14 flex items-center justify-between px-4 shadow-sm border-b border-slate-200 z-20">
             <div class="flex items-center gap-3"><button onclick="toggleMobileSidebar()" class="text-slate-600 p-2"><i class="ri-menu-line text-xl"></i></button><div class="font-bold text-slate-800" id="mobilePageTitle">消防人員</div></div>
-            <a href="javascript:void(0)" onclick="location.href=PORTAL_URL" class="text-slate-400 hover:text-blue-600"><i class="ri-home-4-line text-xl"></i></a>
+            <a href="javascript:void(0)" onclick="location.href='https://tfd-train.github.io/Training-Management-Platform/'" class="text-slate-400 hover:text-blue-600"><i class="ri-home-4-line text-xl"></i></a>
         </div>
 
         <div id="toolbar-container" class="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm z-10">
@@ -224,10 +238,8 @@
         let currentTab = 1; 
         let printActionType = '';
 
-        // ★ 新增：雲端＆系統網址常數（請自行改成實際 URL）
+        // ★ 填入訓練流路系統專用的 GAS 網址 (請修改此處！)
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDk9vkK3Idu7ax_mpfx4hcW36Bn_IIoen72gqXmNRPlXn6PDzQJMgONXAqCX46uJd9OA/exec";
-        const OTHER_SYSTEM_URL = "https://tfd-train.github.io/Facility-Booking/"; // 場地借用系統網址
-        const PORTAL_URL = "https://tfd-train.github.io/Training-Management-Platform/";       // 整合首頁網址
         
         const nowYear = new Date().getFullYear();
         let currentYear = (nowYear >= 2025 && nowYear <= 2029) ? nowYear : 2025;
@@ -248,8 +260,6 @@
         let currentEdit = null;
         let selectedDates = new Set();
         let currentCalendarMonth = 1;
-
-        // ★ 新增：列印月份選擇狀態（預設 1–12 月全選）
         let selectedPrintMonths = new Set(Array.from({ length: 12 }, (_, i) => i + 1));
 
         // === 2. 下載與匯出功能 (確保優先定義) ===
