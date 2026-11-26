@@ -38,6 +38,9 @@ jobs:
         with:
           # Upload entire repository
           path: '.'
+      # 上傳完要等 GitHub 建好索引，否則部署步驟會讀到 0 個 artifact 而失敗
+      - name: Wait for artifact to be available
+        run: sleep 15
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
